@@ -1,0 +1,198 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>浅谈几个流行的前端SPA方案</title>
+        <link rel="stylesheet" href="../reveal/css/reveal.css">
+        <link rel="stylesheet" href="../reveal/css/theme/solarized.css">
+        <!-- Code syntax highlighting -->
+        <link rel="stylesheet" href="../reveal/lib/css/zenburn.css">
+
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal/css/print/pdf.css' : '../reveal/css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+
+                <section>
+                    <h2>浅谈几个流行的前端SPA方案</h2>
+                    <h4>erik</h4>
+                </section>
+
+                <section data-background="#FFE6A1">
+                    <h4>本分享属于科普性质，时间有限</h4>
+                    <h4>本分享带有主观喜好，切勿盲从</h4>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Talk about
+
+                    - Backbone
+                    - ER
+                    - React
+                        - redux
+                        - reflux
+                    - Vue
+                    - Angular2
+                    - Polymer
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ![Backbone](img/backbone.png)
+
+                    #### MV* 
+
+                    - View
+                    - Model & Collection
+                    - Router
+                    - Events
+
+                    [Extensions and Resources](https://github.com/jashkenas/backbone/wiki/Extensions,-Plugins,-Resources)
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Backbone - Model & Collection
+
+                    - Model: Object
+                    - Collection: Array
+                    - Change Event
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Backbone - View
+
+                    - 创建并对应一个 $el
+                    - DOM 事件代理
+                    - 自己管理生命周期、渲染、层级关系
+                    - View has a Model
+
+                    ```javascript
+Backbone.View.extend({
+    template: _.template($('#view-todo-list').html()),
+
+    renderItem: function (item) {
+        var itemView = new ItemView({model: item});
+        itemView.render();
+        this.childs['item' + item.get('id')] = itemView;
+        this.getListWrap().append(itemView.$el);
+    },
+
+    render: function () {
+        var html = this.template({
+            category: this.model.get('category'),
+            categories: this.model.get('categories')
+        });
+        this.$el.html(html);
+
+        this.model.get('todos').each(this.renderItem, this);
+        return this;
+    },
+
+    getListWrap: function () {
+        return this.$('.todo-list');
+    }
+});
+                    ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Backbone - problem
+
+                    #### 框架的价值观由设计、文档、示例决定，而不是扩展性
+
+                    - extend
+                    - not a Plain Object (Collection or Array)
+                    - Modular: JS、template
+                    - Extension风格: 直接挂在Backbone上
+                    - MV*
+                    </script>
+                </section>
+
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Page title
+
+                        A paragraph with some text and a [link](http://hakim.se).
+
+                       
+
+
+```ts
+export default class ListView {
+    constructor(
+        private routeParams: RouteParams
+    ) {
+    }
+
+    doRm = new EventEmitter(false);
+    doDone = new EventEmitter(false);
+
+    rmTodo(index) {
+        this.doRm.emit(index);
+    }
+
+    doneTodo(index) {
+        this.doDone.emit(index);
+    }
+}
+```
+                    </script>
+                </section>
+                <section>
+                    <p class="fragment grow">grow</p>
+                    <p class="fragment shrink">shrink</p>
+                    <p class="fragment fade-out">fade-out</p>
+                    <p class="fragment current-visible">visible only once</p>
+                    <p class="fragment highlight-current-blue">blue only once</p>
+                    <p class="fragment highlight-red">highlight-red</p>
+                    <p class="fragment highlight-green">highlight-green</p>
+                    <p class="fragment highlight-blue">highlight-blue</p>
+                </section>
+                <section>
+                    <span class="fragment fade-in">
+                        <span class="fragment fade-out">I'll fade in, then out</span>
+                    </span>
+                </section>
+            </div>
+        </div>
+        <script src="../head.min.js"></script>
+        <script src="../reveal/js/reveal.js"></script>
+        <script>
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            history: true,
+            center: true,
+
+            transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+            // Optional reveal.js plugins
+            dependencies: [
+                { src: '../reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                { src: '../reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: '../reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: '../reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                { src: '../reveal/plugin/zoom-js/zoom.js', async: true },
+                { src: '../reveal/plugin/notes/notes.js', async: true }
+            ]
+        });
+        Reveal.configure({ slideNumber: 'c/t' });
+        </script>
+    </body>
+</html>
