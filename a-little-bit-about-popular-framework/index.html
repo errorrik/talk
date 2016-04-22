@@ -15,6 +15,21 @@
             link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal/css/print/pdf.css' : '../reveal/css/print/paper.css';
             document.getElementsByTagName( 'head' )[0].appendChild( link );
         </script>
+
+        <style>
+        .list-and-code ul {
+            float: left;
+            width: 40%;
+            margin-top: 20px;
+            font-size: 60%;
+        }
+
+        .list-and-code pre {
+            float: right;
+            width: 55%;
+            font-size: .4em;
+        }
+        </style>
     </head>
     <body>
         <div class="reveal">
@@ -70,7 +85,7 @@
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-markdown class="list-and-code">
                     <script type="text/template">
                     ## Backbone - View
 
@@ -84,6 +99,7 @@ Backbone.View.extend({
     template: _.template($('#view-todo-list').html()),
 
     renderItem: function (item) {
+        // 手工创建数据项的对象，然后自己 render+append
         var itemView = new ItemView({model: item});
         itemView.render();
         this.childs['item' + item.get('id')] = itemView;
@@ -97,6 +113,7 @@ Backbone.View.extend({
         });
         this.$el.html(html);
 
+        // 遍历collection，绘制数据项
         this.model.get('todos').each(this.renderItem, this);
         return this;
     },
@@ -123,37 +140,1021 @@ Backbone.View.extend({
                     </script>
                 </section>
 
+                <section data-markdown>
+                    <script type="text/template">
+                    ## ER
+
+                    #### MVC (MVP)
+
+                    ![er](img/er.png)
+                    
+                    </script>
+                </section>
+
+                <section data-markdown class="list-and-code">
+                    <script type="text/template">
+                    ## ER - Action
+
+                    - Action 是粘合剂
+                    - 有完整的生命周期
+                    - 有预留的钩子
+                    - 监听view的事件，调用view的方法
+                    - has a view, has a model
+
+```javascript
+define(function (require) {
+    var Action = require('er/Action');
+
+    // 自己写个 Action 类，继承于 er/Action
+    function TodoAction() {
+        Action.apply(this, arguments);
+    }
+    require('er/util').inherits(TodoAction, Action);
+
+    // 声明 Model 和 View 的类型，Action 在初始化时自动创建
+    TodoAction.prototype.modelType = require('./ListModel');
+    TodoAction.prototype.viewType = require('./ListView');
+
+    // 在 initBehavior 的勾子中挂 View 的监听行为
+    TodoAction.prototype.initBehavior = function () {
+        this.view.on('rm', rmTodo, this);
+    };
+
+    function rmTodo(e) {
+        var id = e.data;
+        var view = this.view;
+
+        // Action 调用 Model 的方法发起数据请求
+        // 完成后调用 View 的方法更新视图
+        this.model.rmTodo(id).then(function () {
+            view.rmTodo(id);
+        });
+    }
+
+    return TodoAction;
+});
+```
+                    </script>
+                </section>
+
+                <section data-markdown class="list-and-code">
+                    <script type="text/template">
+                    ## ER - View
+
+                    - view是个对象
+                    - 抽象很原始，通常需要依赖ETpl做HTML灌入、ESUI和EF做组件渲染
+                    - 响应行为时抛出事件，通常由Action监听和处理，暴露修改视图的方法
+                    - EF提供方便的uiEvents和uiProperties支持
+                    - has a model，开发者要忍住避开Action直接操作
+
+```javascript
+// 自己写个 Action 类，UIView 来源于 EF
+function FormView() {
+    UIView.apply(this, arguments);
+}
+require('er/util').inherits(FormView, UIView);
+
+// 声明 template，一个 ETpl 的 target id
+FormView.prototype.template = 'todo/form';
+
+// 组件属性的支持，在初始化组件时自动注入
+// @ 开头表示引用 Model中数据项
+FormView.prototype.uiProperties = {
+    title: {
+        value: '@title'
+    },
+
+    desc: {
+        value: '@desc'
+    },
+
+    endTimeD: {
+        rawValue: '@endTime'
+    },
+
+    endTimeT: {
+        datasource: '@dateTimes',
+        value: '@endTimeT'
+    },
+
+    category: {
+        datasource: '@categories',
+        value: '@categoryId'
+    }
+};
+
+// 组件属性的支持，在初始化组件时自动绑定
+FormView.prototype.uiEvents = {
+    'cancel:click': function () {
+        history.back();
+    },
+
+    'ok:click': function () {
+        var title = this.get('title').getValue();
+
+        if (!title) {
+            return;
+        }
+
+        var desc = this.get('desc').getValue();
+        var category = this.get('category').getValue();
+        var endTime = this.get('endTimeD').getRawValue();
+        var endTimeT = this.get('endTimeT').getValue();
+        endTime.setHours(endTimeT);
+
+        // 响应用户操作，fire 事件。通常由 Action 监听和处理
+        this.fire('submit', {
+            title: title,
+            desc: desc,
+            endTime: endTime.getTime(),
+            categoryId: category
+        });
+    },
+
+    'addCategory:click': function () {
+        var addCategoryDialog = this.get('addCategoryDialog');
+        if (!addCategoryDialog) {
+            var div = document.createElement('div');
+            document.body.appendChild(div);
+
+            addCategoryDialog = this.create('ActionDialog', {
+                url: '/category/add',
+                id: 'addCategoryDialog',
+                title: '添加分类',
+                main: div,
+                needFoot: false,
+                draggable: true,
+                width: 300,
+                mask: true,
+                viewContext: this.viewContext
+            });
+            addCategoryDialog.render();
+            addCategoryDialog.on('action@done', this.fireCategoryChange.bind(this));
+            addCategoryDialog.on('action@cancel', this.closeAddCategoryDialog.bind(this));
+        }
+
+        addCategoryDialog.show();
+    }
+};
+
+FormView.prototype.closeAddCategoryDialog = function () {
+    this.get('addCategoryDialog').hide();
+};
+
+FormView.prototype.fireCategoryChange = function (e) {
+    this.fire('categoryChange');
+};
+
+FormView.prototype.updateCategory = function (datasource) {
+    var datasource = this.model.get('categories');
+    var category = this.get('category');
+    category.set('datasource', datasource);
+
+    this.getSafely('addCategoryDialog').dispose();
+};
+```
+                    </script>
+                </section>
+
+                <section data-markdown class="list-and-code">
+                    <script type="text/template">
+                    ## ER - Model
+
+                    - 数据容器
+                    - 数据准备过程
+                    - 数据变更
+
+```javascript
+function TodoModel() {
+    Model.apply(this, arguments);
+
+    // Model 将自动装载 datasource
+    this.datasource = {
+        list: function (model) {
+            return service.todos(model.get('category'));
+        },
+
+        categories: function (model) {
+            return service.categories();
+        }
+    };
+}
+require('er/util').inherits(TodoModel, Model);
+
+// 自动装载完后调用 prepare 勾子
+TodoModel.prototype.prepare = function () {
+    var list = this.get('list');
+
+    list.forEach(function (item) {
+        item.endTimeText = moment(item.endTime).format('YYYY-MM-DD, h:mm a');
+    });
+};
+
+// 暴露数据操作方法，Action 调用
+TodoModel.prototype.rmTodo = function (id) {
+    var list = this.get('list');
+    return service.rm(id).then(function () {
+        // 没走set方法
+        var len = list.length;
+        while (len--) {
+            if (list[len].id == id) {
+                list.splice(len, 1);
+                break;
+            }
+        }
+    });
+};
+```
+                    </script>
+                </section>
 
                 <section data-markdown>
                     <script type="text/template">
-                        ## Page title
+                    ## ER - Ploblem
 
-                        A paragraph with some text and a [link](http://hakim.se).
+                    - 渣文档，还没搭起来就心死了
+                    - 事件爆炸
+                    - URL 设计不灵活，不restful
+                    - 组件开发门槛不低
+                    </script>
+                </section>
 
-                       
+                <section data-markdown>
+                    <script type="text/template">
+                    ![react](img/react.png)
+
+                    #### UI
+
+                    - JSX，结构写在组件里
+                    - API简单清晰
+                    - 完善的生命周期
+                    - prop & state
+                    - Virtual-DOM (不提这个都不好意思说react)
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ![react](img/flux.png)
+
+                    ![react](img/flux-data-flow.png)
+
+                    [Flux overview](https://facebook.github.io/flux/docs/overview.html)
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Flux Application Architecture
+
+                    - 关注点是应用数据流，单向
+                    - store: 存储数据
+                    - action: 数据操作的描述对象
+                    - dispatcher: 将 action 分发到 store，single
+                    - controller-view: root ui，和 store 对接
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Redux
+
+                    ![react](img/redux.jpg)
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Redux controller-view
+
+```javascript
+import React, {Component, PropTypes} from 'react'
+import {connect} from 'react-redux'
+
+import * as service from '../service.js'
+import CategoryFilter from './CategoryFilter.js'
+import TodoList from './ListView.js'
+import store from '../../index.js'
+import {fetchTodos, doneTodo, rmTodo} from './action.js'
+import {fetchCategories} from '../category/action.js'
 
 
-```ts
-export default class ListView {
-    constructor(
-        private routeParams: RouteParams
-    ) {
+class ListPage extends Component {
+    constructor(props) {
+        super(props);
+
+        // 一些要传递给子组件的方法，this 自己绑
+        this.doneTodo = this.doneTodo.bind(this);
+        this.rmTodo = this.rmTodo.bind(this);
     }
 
-    doRm = new EventEmitter(false);
-    doDone = new EventEmitter(false);
+    // 在 will mount 时进行dispatch action，开始准备数据
+    // redux 将 dispatch 方法挂在 props 上
+    componentWillMount() {
+        const {dispatch, params: {category}} = this.props;
+        dispatch(fetchTodos(category));
 
-    rmTodo(index) {
-        this.doRm.emit(index);
+        dispatch(fetchCategories());
     }
 
-    doneTodo(index) {
-        this.doDone.emit(index);
+    // 数据返回后，redux 会重新灌入数据
+    componentWillReceiveProps(nextProps) {
+        const {dispatch, params: {category}} = nextProps;
+
+        if (this.props.params.category != category) {
+            dispatch(fetchTodos(category));
+        }
+    }
+
+    // 拿 props 的数据去渲染
+    render() {
+        const {
+            todos: {category, list: todosData}, 
+            categories: {list: categoriesData}
+        } = this.props;
+        return (
+            <div>
+                <a href="#/add" className="todo-add"><i className="fa fa-plus-square"></i></a>
+                <CategoryFilter datasource={categoriesData} value={category}></CategoryFilter>
+                <a href="#/" className="fa fa-close filter-category-clear" style={{display: category ? '' : 'none'}}></a>
+                <TodoList todos={todosData} doneMethod={this.doneTodo} rmMethod={this.rmTodo}/>
+            </div>
+        );
+    }
+
+    doneTodo(id) {
+        this.props.dispatch(doneTodo(id));
+    }
+
+    rmTodo(id) {
+        this.props.dispatch(rmTodo(id));
+    }
+}
+
+ListPage.propTypes = {
+    todos: PropTypes.object.isRequired,
+    categories: PropTypes.object.isRequired,
+    category: PropTypes.any,
+    params: PropTypes.object
+};
+
+// Controller-View 由 redux 进行connect
+export default connect(function (state) {
+    return state;
+})(ListPage)
+```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Redux Action&Reducer&Store
+
+```javascript
+// Action ===================
+import * as service from '../service.js'
+import ActionType from './ActionType.js'
+
+// 一个异步操作通常要分阶段完成，所以需要多个 Action
+function innerFetchTodos(category) {
+    return dispatch => {
+        dispatch(requestTodos(category));
+        return service.todos(category)
+            .then(todos => dispatch(receiveTodos(category, todos)))
+    };
+}
+
+function requestTodos(category) {
+    return {
+        type: ActionType.REQUEST_TODOS,
+        payload: {
+            category
+        }
+    };
+}
+
+function receiveTodos(category, todos) {
+    return {
+        type: ActionType.RECEIVE_TODOS,
+        payload: {
+            category,
+            todos
+        }
+    };
+}
+
+export function fetchTodos(category) {
+    return (dispatch, getState) => {
+        let state = getState();
+
+        if (!state.todos.isFetching) {
+            return dispatch(innerFetchTodos(category));
+        }
+    };
+}
+
+// Reducer =================
+import ActionType from './ActionType.js'
+
+// 根据 action.type 做操作，返回完整的 state 对象
+// 对于异步数据请求，在 request 阶段，应该有标记字段，并把内容字段设置成符合类型的空值
+export default function todos(state = {list: []}, action) {
+    switch (action.type) {
+        case ActionType.REQUEST_TODOS:
+            return {
+                isFetching: true,
+                category: action.payload.category,
+                list: []
+            };
+
+        case ActionType.RECEIVE_TODOS:
+            return {
+                isFetching: false,
+                category: action.payload.category,
+                list: action.payload.todos
+            };
+    }
+
+    return state;
+}
+
+// Store ==================
+const store = createStore(
+    combineReducers({
+        router: routerStateReducer,
+        todos: todosReducer
+    }),
+    compose(
+        reduxReactRouter({
+            createHistory: createHashHistory
+        })
+    )
+);
+```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Reflux
+
+                    ![react](img/reflux.jpg)
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Reflux Controller-View
+
+```javascript
+import todosStore from './store'
+import todoActions from './actions'
+import categoriesStore from '../category/store'
+import categoriyActions from '../category/actions'
+
+import React, {Component} from 'react'
+import Reflux from 'reflux'
+
+import TodoList from './ListView'
+import CategoryFilter from '../category/Filter'
+
+
+
+export default class ListPage extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            todos: todosStore.getData(),
+            categories: categoriesStore.getData(),
+            category: 0
+        };
+    }
+
+    onStateChange(nextState) {
+        this.setState(nextState);
+    }
+
+    componentDidMount() {
+        // Controller-View 自己监听 store，store 变化时调用自身的 setState
+        this.unsubTodos = todosStore.listen(todos => {
+            this.onStateChange({todos});
+        });
+        this.unsubCategories = categoriesStore.listen(categories => {
+            this.onStateChange({categories});
+        });
+
+        let category = this.props.params.category;
+        this.setState({category});
+        todoActions.list(category);
+
+        categoriyActions.list();
+    }
+
+    // will unmount 时手工移除 store 的监听
+    componentWillUnmount() {
+        this.unsubTodos();
+        this.unsubCategories();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        let category = nextProps.params.category;
+        this.setState({category});
+
+        todoActions.list(category);
+    }
+
+    render() {
+        // 拿 state 的数据去渲染
+        const {todos, categories, category} = this.state;
+        return (
+            <div>
+                <a href="#/add" className="todo-add"><i className="fa fa-plus-square"></i></a>
+                <CategoryFilter datasource={categories} value={category}></CategoryFilter>
+                <a href="#/" className="fa fa-close filter-category-clear" style={{display: category ? '' : 'none'}}></a>
+                <TodoList todos={todos} doneMethod={this.doneTodo} rmMethod={this.rmTodo}/>
+            </div>
+        );
+    }
+
+    doneTodo(id) {
+        todoActions.done(id);
+    }
+
+    rmTodo(id) {
+        todoActions.rm(id);
     }
 }
 ```
                     </script>
                 </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Reflux Action&Store
+
+```javascript
+// Action ================
+import Reflux from 'reflux'
+import * as service from '../service'
+
+
+const actions = Reflux.createActions({
+    list: {
+        children: ['completed', 'failed']
+    }
+});
+
+// Action 负责执行，而不是单纯的行为对象
+actions.list.listen(function (category) {
+    service.todos(category)
+        .then(this.completed)
+        .catch(this.failed);
+});
+
+// Store =================
+import Reflux from 'reflux'
+import actions from './actions'
+
+
+let todos = [];
+
+// Store 监听自己感兴趣的 Action
+// 负责 Action 时，自身数据的变化
+let store = Reflux.createStore({
+    listenables: actions,
+
+    onListCompleted(data) {
+        todos = data;
+
+        // Store 的变更触发是手工 trigger 的
+        this.trigger(todos);
+    }
+
+    getData() {
+        return todos;
+    }
+});
+
+export default store;
+```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Redux vs Reflux
+
+                    - single store vs multi store
+                    - dispatch vs no dispatch
+                    - action 的职责
+                    - connect vs listen
+                    - props vs state
+                    - immutable?
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## React - Ploblem
+
+                    - className
+                    - JSX
+                    - 深层次组件的数据传递与行为管理
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ### VM
+
+                    - thin View
+                    - property binding
+                    - event binding
+                    - 2-way binding
+
+                    Vue - Angular2 - Polymer
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ![vue](img/vue.png)
+
+                    #### VM is Component
+
+                    - WebComponents like
+                    - 支持各种绑定 （废话）
+                    - 明确的归类（template、data、props、events、methods...)
+                    - 清晰的生命周期
+                    - 表达式支持较强大
+                    - 计算属性、filter、mixin
+                    - 组件树管理，事件（冒泡、向下传导）
+                    - 在异步队列中视图更新
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ![vue](img/vue-mvvm.png)
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Vue - View
+
+```html
+<ul class="todo-list">
+    <li v-for="(index, item) in todos" 
+        v-bind:style="{'border-color': item.category.color}"
+        v-bind:class="{'todo-done': item.done}"
+    >
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.desc }}</p>
+        <div class="todo-meta">
+            <span v-if="item.category">{{ item.category.title }} | </span>
+            <span>预期完成时间: {{ item.endTime | formatDate 'YYYY-MM-DD, h:mm a' }}</span>
+        </div>
+        <a class="fa fa-pencil" href="#/edit/{{ item.id }}"></a>
+        <i class="fa fa-check" v-on:click="doneTodo(index)"></i>
+        <i class="fa fa-trash-o" v-on:click="rmTodo(index)"></i>
+    </li>
+</ul>
+```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Vue - Component
+
+```javascript
+import {
+    todos as getTodos, 
+    categories as getCategories,
+    rm as rmTodo,
+    done as doneTodo
+} from '../service'
+
+export default {
+    // 声明数据项
+    data() {
+        return {
+            todos: [],
+            categories: [],
+            category: null
+        };
+    },
+
+    route: {
+        data({to}) {
+            let category = to.params.category;
+            return Promise.all([getTodos(category), getCategories()])
+                .then(
+                    ([todos, categories]) => {
+                        return {todos, categories, category};
+                    }
+                );
+        }
+    },
+
+    methods: {
+        doneTodo: function (index) {
+            let todo = this.todos[index];
+
+            if (!todo.done) {
+                doneTodo(todo.id).then(() => {
+                    // 直接改数据，视图就生效
+                    todo.done = true;
+                });
+            }
+        },
+
+        rmTodo: function (index) {
+            rmTodo(this.todos[index].id).then(() => {
+                // 直接改数据，视图就生效
+                this.todos.splice(index, 1);
+            });
+        }
+    }
+}
+```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ![vuex](img/vuex.png)
+
+                    #### VUEX - Flux like Application Architecture
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Vue - Ploblem
+
+                    - defineProperty转换，数据属性要齐
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ![angular](img/angular.png)
+
+                    - VM is Component
+                    - WebComponents like
+                    - TypeScript (Dart / JavaScript)
+                    - decorator
+                    - 模块一致性好
+                    - 绑定语法设计较好
+                    - input and output
+                    - DI
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ![angular](img/angular2-overview.png)
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Angular2 - View
+
+```html
+<ul class="todo-list">
+    <li *ngFor="#item of todos; #i = index"
+        [class.todo-done]="item.done"
+        [style.borderColor]="item.category.color"
+    >
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.desc }}</p>
+        <div class="todo-meta">
+            <span *ngIf="item.category">{{ item.category.title }} | </span>
+            <span>预期完成时间: {{ item.endTime | formatDate: 'YYYY-MM-DD, h:mm a' }}</span>
+        </div>
+        <a class="fa fa-pencil" [routerLink]="['EditTodo', {id: item.id}]"></a>
+        <i class="fa fa-check" (click)="doneTodo(i)"></i>
+        <i class="fa fa-trash-o" (click)="rmTodo(i)"></i>
+    </li>
+</ul>
+```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Angular2 - Component
+
+```javascript
+import {Component} from 'angular2/core'
+import {RouteParams, ROUTER_DIRECTIVES} from 'angular2/router'
+
+import TodoService from './service'
+import CategoryService from '../category/service'
+import {DateFormatPipe} from '../common'
+import ListView from './ListView'
+
+// 通过 decorator 声明 component
+@Component({
+    templateUrl: '/src/todo/ListPage.html',
+    providers: [TodoService, CategoryService],
+    pipes: [DateFormatPipe],
+    directives: [ROUTER_DIRECTIVES, ListView]
+})
+export default class ListPage {
+    // 通过构造函数注入 provider
+    constructor(
+        private todoService: TodoService,
+        private categoryService: CategoryService,
+        private routeParams: RouteParams
+    ) {
+    }
+
+    ngOnInit() {
+        let category = +this.routeParams.get('category');
+        this.category = category;
+        this.todos = [];
+        let promises = [
+            this.todoService.list(category),
+            this.categoryService.list()
+        ];
+
+        // 在 ngOnInit 勾子中发起请求，返回后直接修改自身属性
+        Promise.all(promises).then(([todos, categories]) => {
+            this.todos = todos;
+            this.categories = categories;
+        });
+    }
+
+    rmTodo(index) {
+        let todo = this.todos[index];
+        this.todos.splice(index, 1);
+        this.todoService.rm(todo.id);
+    }
+
+    doneTodo(index) {
+        let todo = this.todos[index];
+        if (!todo.done) {
+            todo.done = true;
+            this.todoService.done(todo.id);
+        }
+    }
+}
+```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Angular2 - Ploblem
+
+                    - TypeScript
+                    - Component TagName 的指定
+                    - template语法中的 *, *ngIf / *ngFor
+                    - 组件动态创建接口复杂，内部结构复杂（ElementRef、instance、Element...)
+                    - API 复杂
+                    - 开发 DOM 无关 Component 是个理想
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ![polymer](img/polymer.png)
+
+                    - WebComponents
+                    - Component is VM
+                    - immutable
+                    - async render
+                    - 简单纯粹（生命周期、绑定语法）
+                    </script>
+                </section>
+
+<section data-markdown>
+                    <script type="text/template">
+                    ## Polymer - Component
+
+```html
+<!-- 把组件模板和组件对象包在 dom-module 中 -->
+<dom-module id="page-todos">
+
+<template>
+    <a href="#/add" class="todo-add"><i class="fa fa-plus-square"></i></a>
+    <ul class="filter-category">
+        <template is="dom-repeat" items="{{categories}}" id="categories">
+            <li style="background:{{item.color}}" class$="{{categoryClass(item, params.category)}}"><a href="#/todos/category/{{ item.id }}">{{ item.title }}</a></li>
+        </template>
+    </ul>
+    <!-- if 和 for 需要包在template下 -->
+    <template is="dom-if" if="{{params.category}}">
+        <a href="#/" class="fa fa-close filter-category-clear"></a>
+    </template>
+    <ul class="todo-list">
+        <template is="dom-repeat" items="{{todos}}">
+            <li style="border-color: {{item.category.color}}"
+                class$="{{todoClass(item)}}"
+            >
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.desc }}</p>
+                <div class="todo-meta">
+                    <span v-if="item.category">{{ item.category.title }} | </span>
+                    <span>预期完成时间: {{ endTimeFormat(item.endTime)  }}</span>
+                </div>
+                <a class="fa fa-pencil" href="#/edit/{{ item.id }}"></a>
+                <i class="fa fa-check" on-click="doneTodo"></i>
+                <i class="fa fa-trash-o" on-click="rmTodo"></i>
+            </li>
+        </template>
+    </ul>
+</template>
+
+<script>
+(function () {
+'use strict';
+
+Polymer({
+    is: 'page-todos',
+
+    properties: {
+        categories: {
+          type: Array
+        }
+    },
+
+    update: function () {
+        var categoriesPromise;
+        if (!this.categories) {
+            this.categories = [];
+            service.categories().then(categories => {
+                this.categories = categories;
+            });
+        }
+
+        service.todos(this.params.category).then(todos => {
+            this.todos = todos;
+        });
+    },
+
+    // 绑定到点击行为的方法
+    doneTodo: function (e) {
+        var todo = Object.assign({}, e.model.get('item'));
+        todo.done = true;
+        this.splice('todos', e.model.get('index'), 1, todo);
+        service.done(todo.id);
+    },
+
+    // 绑定到点击行为的方法
+    rmTodo: function (e) {
+        // 通过 e.model 获得绑定时环境的数据
+        var todo = e.model.get('item');
+        this.splice('todos', e.model.get('index'), 1);
+        service.rm(todo.id);
+    },
+
+    // 用于数据绑定中调用，根据数据项控制 class
+    todoClass: function (todo) {
+        return todo.done ? 'todo-done' : '';
+    },
+
+    // 用于数据绑定中调用，根据数据项控制 class
+    categoryClass: function (category, currentCategoryId) {
+        return category.id == currentCategoryId
+            ? 'checked'
+            : '';
+    },
+
+    // filter 功能也通过方法实现
+    endTimeFormat: function (value) {
+        if (value) {
+            return moment(value).format('YYYY-MM-DD, h:mm a');
+        }
+
+        return '';
+    }
+});
+})();
+< /script>
+</dom-module>
+```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Polymer - Ploblem
+                    
+                    - HTML import 还是不好用（eg. invoke once)
+                    - WebComponents 还是未来
+                    - 绑定支持的表达式比较弱
+                    - 表达式对数据项的依赖在方法调用时会隐藏
+                    - event argument 的包装感觉有些奇怪
+                    - 数组操作方法竟然在 Component 上
+                    </script>
+                </section>
+
                 <section>
                     <p class="fragment grow">grow</p>
                     <p class="fragment shrink">shrink</p>
@@ -163,11 +1164,6 @@ export default class ListView {
                     <p class="fragment highlight-red">highlight-red</p>
                     <p class="fragment highlight-green">highlight-green</p>
                     <p class="fragment highlight-blue">highlight-blue</p>
-                </section>
-                <section>
-                    <span class="fragment fade-in">
-                        <span class="fragment fade-out">I'll fade in, then out</span>
-                    </span>
                 </section>
             </div>
         </div>
