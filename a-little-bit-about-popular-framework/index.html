@@ -29,6 +29,13 @@
             width: 55%;
             font-size: .4em;
         }
+
+        .reveal .small-table thead, .small-table tbody { font-size: .8em; }
+        .reveal .small-table thead{
+            border-bottom: 1px solid #666;
+        }
+        .reveal .small-table td { color: #666; border: 0;}
+        .reveal .small-table th { color: #333; border: 0; word-break: keep-all; }
         </style>
     </head>
     <body>
@@ -40,12 +47,12 @@
                     <h4>erik</h4>
                 </section>
 
-                <section data-background="#FFE6A1">
+                <section data-background="#FFE6A1" data-background-transition="zoom">
                     <h4>本分享属于科普性质，时间有限</h4>
                     <h4>本分享带有主观喜好，切勿盲从</h4>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-markdown>
                     <script type="text/template">
                     ## Talk about
 
@@ -60,7 +67,7 @@
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
                     <script type="text/template">
                     ![Backbone](img/backbone.png)
 
@@ -75,7 +82,7 @@
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
                     <script type="text/template">
                     ## Backbone - Model & Collection
 
@@ -85,7 +92,7 @@
                     </script>
                 </section>
 
-                <section data-markdown class="list-and-code">
+                <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown class="list-and-code">
                     <script type="text/template">
                     ## Backbone - View
 
@@ -126,7 +133,7 @@ Backbone.View.extend({
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
                     <script type="text/template">
                     ## Backbone - problem
 
@@ -140,7 +147,7 @@ Backbone.View.extend({
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-markdown>
                     <script type="text/template">
                     ## ER
 
@@ -151,7 +158,7 @@ Backbone.View.extend({
                     </script>
                 </section>
 
-                <section data-markdown class="list-and-code">
+                <section data-background-transition="zoom" data-markdown class="list-and-code">
                     <script type="text/template">
                     ## ER - Action
 
@@ -197,7 +204,7 @@ define(function (require) {
                     </script>
                 </section>
 
-                <section data-markdown class="list-and-code">
+                <section data-background-transition="zoom" data-markdown class="list-and-code">
                     <script type="text/template">
                     ## ER - View
 
@@ -316,7 +323,7 @@ FormView.prototype.updateCategory = function (datasource) {
                     </script>
                 </section>
 
-                <section data-markdown class="list-and-code">
+                <section data-background-transition="zoom" data-markdown class="list-and-code">
                     <script type="text/template">
                     ## ER - Model
 
@@ -368,7 +375,7 @@ TodoModel.prototype.rmTodo = function (id) {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-markdown>
                     <script type="text/template">
                     ## ER - Ploblem
 
@@ -379,7 +386,7 @@ TodoModel.prototype.rmTodo = function (id) {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ![react](img/react.png)
 
@@ -393,7 +400,7 @@ TodoModel.prototype.rmTodo = function (id) {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ![react](img/flux.png)
 
@@ -403,7 +410,7 @@ TodoModel.prototype.rmTodo = function (id) {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ## Flux Application Architecture
 
@@ -415,7 +422,7 @@ TodoModel.prototype.rmTodo = function (id) {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ## Redux
 
@@ -423,7 +430,7 @@ TodoModel.prototype.rmTodo = function (id) {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ## Redux controller-view
 
@@ -506,7 +513,7 @@ export default connect(function (state) {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ## Redux Action&Reducer&Store
 
@@ -594,7 +601,7 @@ const store = createStore(
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ## Reflux
 
@@ -602,7 +609,7 @@ const store = createStore(
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ## Reflux Controller-View
 
@@ -689,7 +696,7 @@ export default class ListPage extends Component {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ## Reflux Action&Store
 
@@ -741,7 +748,7 @@ export default store;
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ## Redux vs Reflux
 
@@ -754,7 +761,7 @@ export default store;
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#C2EFFF" data-markdown>
                     <script type="text/template">
                     ## React - Ploblem
 
@@ -764,7 +771,7 @@ export default store;
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-markdown>
                     <script type="text/template">
                     ### VM
 
@@ -777,7 +784,7 @@ export default store;
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#E2FFCE" data-markdown>
                     <script type="text/template">
                     ![vue](img/vue.png)
 
@@ -794,13 +801,13 @@ export default store;
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#E2FFCE" data-markdown>
                     <script type="text/template">
                     ![vue](img/vue-mvvm.png)
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#E2FFCE" data-markdown>
                     <script type="text/template">
                     ## Vue - View
 
@@ -825,7 +832,7 @@ export default store;
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#E2FFCE" data-markdown>
                     <script type="text/template">
                     ## Vue - Component
 
@@ -883,7 +890,7 @@ export default {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#E2FFCE" data-markdown>
                     <script type="text/template">
                     ![vuex](img/vuex.png)
 
@@ -891,7 +898,7 @@ export default {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#E2FFCE" data-markdown>
                     <script type="text/template">
                     ## Vue - Ploblem
 
@@ -899,7 +906,7 @@ export default {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
                     <script type="text/template">
                     ![angular](img/angular.png)
 
@@ -914,13 +921,13 @@ export default {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
                     <script type="text/template">
                     ![angular](img/angular2-overview.png)
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
                     <script type="text/template">
                     ## Angular2 - View
 
@@ -945,7 +952,7 @@ export default {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
                     <script type="text/template">
                     ## Angular2 - Component
 
@@ -1008,7 +1015,7 @@ export default class ListPage {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
                     <script type="text/template">
                     ## Angular2 - Ploblem
 
@@ -1021,7 +1028,7 @@ export default class ListPage {
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#CED0FF" data-markdown>
                     <script type="text/template">
                     ![polymer](img/polymer.png)
 
@@ -1033,7 +1040,7 @@ export default class ListPage {
                     </script>
                 </section>
 
-<section data-markdown>
+                <section data-background-transition="zoom" data-background="#CED0FF" data-markdown>
                     <script type="text/template">
                     ## Polymer - Component
 
@@ -1142,7 +1149,7 @@ Polymer({
                     </script>
                 </section>
 
-                <section data-markdown>
+                <section data-background-transition="zoom" data-background="#CED0FF" data-markdown>
                     <script type="text/template">
                     ## Polymer - Ploblem
                     
@@ -1155,15 +1162,98 @@ Polymer({
                     </script>
                 </section>
 
-                <section>
-                    <p class="fragment grow">grow</p>
-                    <p class="fragment shrink">shrink</p>
-                    <p class="fragment fade-out">fade-out</p>
-                    <p class="fragment current-visible">visible only once</p>
-                    <p class="fragment highlight-current-blue">blue only once</p>
-                    <p class="fragment highlight-red">highlight-red</p>
-                    <p class="fragment highlight-green">highlight-green</p>
-                    <p class="fragment highlight-blue">highlight-blue</p>
+                <section data-background-transition="zoom" data-background="#FCFFCE">
+                    <h2>Render Time</h2>
+                    <table class="small-table" collspacing="0" collapdding="0">
+                        <thead>
+                            <tr>
+                                <th>-</th>
+                                <th>Backbone</th>
+                                <th>ER</th>
+                                <th>React</th>
+                                <th>Vue</th>
+                                <th>Angluar2</th>
+                                <th>Polymer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>List</th>
+                                <td>~330ms</td>
+                                <td>~190ms</td>
+                                <td>~220ms</td>
+                                <td>~660ms</td>
+                                <td>~700ms</td>
+                                <td>~420ms</td>
+                            </tr>
+                            <tr>
+                                <th>EditItem</th>
+                                <td>~1ms</td>
+                                <td>~1ms</td>
+                                <td>~6ms</td>
+                                <td>~2ms</td>
+                                <td>~12ms</td>
+                                <td>~8ms</td>
+                            </tr>
+                            <tr>
+                                <th>RmItem</th>
+                                <td>~1ms</td>
+                                <td>~1ms</td>
+                                <td>~7ms</td>
+                                <td>~10ms</td>
+                                <td>~30ms</td>
+                                <td>~8ms</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ## Timeline - React
+                    
+                    ![](img/react-timeline.png)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ## Timeline - Angular2
+                    
+                    ![](img/angular2-timeline.png)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ## Timeline - Vue
+                    
+                    ![](img/vue-timeline.png)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ## Timeline - Polymer
+                    
+                    ![](img/polymer-timeline.png)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ## Timeline - ER
+                    
+                    ![](img/er-timeline.png)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ## Timeline - Backbone
+                    
+                    ![](img/backbone-timeline.png)
+                    </script>
                 </section>
             </div>
         </div>
