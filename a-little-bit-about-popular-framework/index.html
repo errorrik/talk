@@ -36,6 +36,10 @@
         }
         .reveal .small-table td { color: #666; border: 0;}
         .reveal .small-table th { color: #333; border: 0; word-break: keep-all; }
+
+        .reveal td.level-low { color: #BD3232; text-align: center;}
+        .reveal td.level-normal { color: #98983E; text-align: center;}
+        .reveal td.level-high { color: #4FA54F; text-align: center;}
         </style>
     </head>
     <body>
@@ -50,6 +54,7 @@
                 <section data-background="#FFE6A1" data-background-transition="zoom">
                     <h4>本分享属于科普性质，时间有限</h4>
                     <h4>本分享带有主观喜好，切勿盲从</h4>
+                    <h4>框架的价值观由设计、文档、示例决定，而不是扩展性</h4>
                 </section>
 
                 <section data-background-transition="zoom" data-markdown>
@@ -82,6 +87,98 @@
                     </script>
                 </section>
 
+                <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
+                    <script type="text/template">
+                    ## Backbone - Custom Controller
+
+                    ```javascript
+define(function(require) {
+    var Backbone = require('Backbone');
+    var _ = require('underscore');
+
+    var props = ['model', 'initModel', 'view', 'initView', 'el', 'query'];
+    function Controller(options) {
+        options = options || {};
+        for (var i = 0; i < props.length; i++) {
+            var prop = props[i];
+            if (options[prop]) {
+                this[prop] = options[prop];
+            }
+        }
+
+        this.childs = {};
+
+        this.before();
+        if (this.model) {
+            this.afterModelInit();
+        }
+        else {
+            this.initModel().then(this.afterModelInit.bind(this));
+        }
+    }
+
+    _.extend(Controller.prototype, Backbone.Events);
+
+    Controller.prototype.initModel = function () {
+        return Promise.resolve(new Backbone.Model());
+    };
+
+    Controller.prototype.afterModelInit = function (model) {
+        this.model = model;
+        this.view = this.initView();
+
+        if (this.view) {
+            this.view.childs = {};
+            this.view.controller = this;
+
+            $(this.el).append(this.view.$el);
+            this.view.render();
+        }
+
+        this.after();
+    };
+
+    Controller.prototype.initView = function () {
+        return new Backbone.View();
+    };
+
+    Controller.prototype.dispose = function () {
+        for (var key in this.childs) {
+            this.childs[key].dispose();
+        }
+        this.childs = null;
+
+        if (this.view) {
+            var childs = this.view.childs;
+            for (var key in childs) {
+                childs[key].remove();
+            }
+            this.view.childs = null;
+            this.view.controller = null;
+
+            this.view.remove();
+        }
+    };
+
+    Controller.prototype.before = function () {};
+    Controller.prototype.after = function () {};
+
+    Controller.derive = derive.bind(Controller, Controller);
+
+    function derive(base, clazz) {
+        function F() {}
+        F.prototype = base.prototype;
+        clazz.prototype = new F();
+        clazz.prototype.constructor = clazz;
+        clazz.derive = derive.bind(clazz, clazz);
+    }
+
+    return Controller;
+});
+
+```
+                    </script>
+                </section>
                 <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
                     <script type="text/template">
                     ## Backbone - Model & Collection
@@ -136,8 +233,6 @@ Backbone.View.extend({
                 <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
                     <script type="text/template">
                     ## Backbone - problem
-
-                    #### 框架的价值观由设计、文档、示例决定，而不是扩展性
 
                     - extend
                     - not a Plain Object (Collection or Array)
@@ -380,6 +475,7 @@ TodoModel.prototype.rmTodo = function (id) {
                     ## ER - Ploblem
 
                     - 渣文档，还没搭起来就心死了
+                    - 没有实践指导
                     - 事件爆炸
                     - URL 设计不灵活，不restful
                     - 组件开发门槛不低
@@ -414,11 +510,13 @@ TodoModel.prototype.rmTodo = function (id) {
                     <script type="text/template">
                     ## Flux Application Architecture
 
-                    - 关注点是应用数据流，单向
+                    - 关注点是应用程序状态数据流，单向
                     - store: 存储数据
                     - action: 数据操作的描述对象
                     - dispatcher: 将 action 分发到 store，single
                     - controller-view: root ui，和 store 对接
+
+                    *考虑下事件中心*
                     </script>
                 </section>
 
@@ -768,6 +866,7 @@ export default store;
                     - className
                     - JSX
                     - 深层次组件的数据传递与行为管理
+                    - 性能优化带来的开发复杂度提升
                     </script>
                 </section>
 
@@ -903,6 +1002,8 @@ export default {
                     ## Vue - Ploblem
 
                     - defineProperty转换，数据属性要齐
+                    - 实例属性和方法的 $ 开头
+                    - 在 Array.prototype 上扩展了两个方法
                     </script>
                 </section>
 
@@ -1181,7 +1282,7 @@ Polymer({
                                 <th>List</th>
                                 <td>~330ms</td>
                                 <td>~190ms</td>
-                                <td>~220ms</td>
+                                <td>~200ms</td>
                                 <td>~660ms</td>
                                 <td>~700ms</td>
                                 <td>~420ms</td>
@@ -1190,7 +1291,7 @@ Polymer({
                                 <th>EditItem</th>
                                 <td>~1ms</td>
                                 <td>~1ms</td>
-                                <td>~6ms</td>
+                                <td>~6ms/80ms</td>
                                 <td>~2ms</td>
                                 <td>~12ms</td>
                                 <td>~8ms</td>
@@ -1199,7 +1300,7 @@ Polymer({
                                 <th>RmItem</th>
                                 <td>~1ms</td>
                                 <td>~1ms</td>
-                                <td>~7ms</td>
+                                <td>~7ms/90ms</td>
                                 <td>~10ms</td>
                                 <td>~30ms</td>
                                 <td>~8ms</td>
@@ -1254,6 +1355,92 @@ Polymer({
                     
                     ![](img/backbone-timeline.png)
                     </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE">
+                    <h2>Development Costs</h2>
+                    <table class="small-table" collspacing="0" collapdding="0">
+                        <thead>
+                            <tr>
+                                <th>-</th>
+                                <th>Backbone</th>
+                                <th>ER</th>
+                                <th>React</th>
+                                <th>Vue</th>
+                                <th>Angluar2</th>
+                                <th>Polymer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>API清晰</th>
+                                <td class="level-normal">中</td>
+                                <td class="level-normal">中</td>
+                                <td class="level-high">高</td>
+                                <td class="level-high">高</td>
+                                <td class="level-normal">中</td>
+                                <td class="level-high">高</td>
+                            </tr>
+                            <tr>
+                                <th>文档便利性</th>
+                                <td class="level-normal">中</td>
+                                <td class="level-low">低</td>
+                                <td class="level-high">高</td>
+                                <td class="level-high">高</td>
+                                <td class="level-normal">中</td>
+                                <td class="level-normal">中</td>
+                            </tr>
+                            <tr>
+                                <th>应用开发便利性</th>
+                                <td class="level-low">低</td>
+                                <td class="level-normal">中</td>
+                                <td class="level-normal">中</td>
+                                <td class="level-high">高</td>
+                                <td class="level-high">高</td>
+                                <td class="level-high">高</td>
+                            </tr>
+                            <tr>
+                                <th>扩展便利性</th>
+                                <td class="level-low">低</td>
+                                <td class="level-low">低</td>
+                                <td class="level-normal">中</td>
+                                <td class="level-high">高</td>
+                                <td class="level-low">低</td>
+                                <td class="level-high">高</td>
+                            </tr>
+                            <tr>
+                                <th>环境搭建便利性</th>
+                                <td class="level-high">高</td>
+                                <td class="level-normal">中</td>
+                                <td class="level-low">低</td>
+                                <td class="level-high">高</td>
+                                <td class="level-low">低</td>
+                                <td class="level-high">高</td>
+                            </tr>
+                            <tr>
+                                <th>模块管理便利性</th>
+                                <td class="level-normal">中</td>
+                                <td class="level-high">高</td>
+                                <td class="level-high">高</td>
+                                <td class="level-high">高</td>
+                                <td class="level-high">高</td>
+                                <td class="level-low">低</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFC5C5" data-markdown>
+                    <script type="text/template">
+                    ## 选型仍需考虑
+                    
+                    - 平台与浏览器
+                    - 代码体积
+                    </script>
+                </section>
+
+                <section>
+                    <h3>Thanks</h3>
                 </section>
             </div>
         </div>
