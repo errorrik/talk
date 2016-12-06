@@ -1,0 +1,408 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>San - 一个新的MVVM UI框架</title>
+        <link rel="stylesheet" href="../reveal/css/reveal.css">
+        <link rel="stylesheet" href="../reveal/css/theme/solarized.css">
+        <!-- Code syntax highlighting -->
+        <link rel="stylesheet" href="../reveal/lib/css/zenburn.css">
+
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal/css/print/pdf.css' : '../reveal/css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+
+        <style>
+        .list-and-code ul {
+            float: left;
+            width: 40%;
+            margin-top: 20px;
+            font-size: 60%;
+        }
+
+        .list-and-code pre {
+            float: right;
+            width: 55%;
+            font-size: .4em;
+        }
+
+        .reveal .small-table thead, .small-table tbody { font-size: .8em; }
+        .reveal .small-table thead{
+            border-bottom: 1px solid #666;
+        }
+        .reveal .small-table td { color: #666; border: 0;}
+        .reveal .small-table th { color: #333; border: 0; word-break: keep-all; }
+
+        .reveal td.level-low { color: #BD3232; text-align: center;}
+        .reveal td.level-normal { color: #98983E; text-align: center;}
+        .reveal td.level-high { color: #4FA54F; text-align: center;}
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+
+                <section>
+                    <img src="img/san.png"><br><br>
+                    <h2>San: 一个新的MVVM UI框架</h2>
+                </section>
+
+
+                <section data-background-transition="zoom" data-markdown>
+                    <script type="text/template">
+                    ## 套路
+
+                    - 别人有多挫
+                    - 我们有多好
+                    - 来一起玩啊
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-markdown>
+                    <script type="text/template">
+                    ## Agenda
+
+                    - 为什么要做San
+                    - 把San做成什么样
+                    - 基于San我们能做什么
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#C2E8FF">
+                    <h3>为什么要做San</h3>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
+                    <script type="text/template">
+                    年初的一次分享：[浅谈几个流行的前端SPA方案](../a-little-bit-about-popular-framework/index.html)
+
+                    - Backbone (MV*)
+                    - ER (MVC)
+                    - Vue (MVVM)
+                    - Angular2 (MVVM)
+                    - Polymer (MVVM)
+                    - React
+                        - redux
+                        - reflux
+                    </script>
+                </section>
+                <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
+                    <script type="text/template">
+                    ## 取代 ER (的开发模式)
+
+                    一句话：时代变了
+
+                    ![](img/ynoter-2.png)
+                    ![](img/ynoter-3.png)
+
+                    
+                    </script>
+                </section>
+                <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
+                    <script type="text/template">
+                    ## 为什么不是 vue / ng / polymer
+
+                    - 兼容性
+                    - 体积
+                    - 编译
+                    </script>
+                </section>
+                <section data-background-transition="zoom" data-background="#C2E8FF" data-markdown>
+                    <script type="text/template">
+                    ## 为什么不是 react
+
+                    - JSX
+                    - 体积
+                    - 丑
+                    - 社区
+                    
+                    [如何看待民工叔因为 Teambition 是 React 技术栈而离职](https://www.zhihu.com/question/53022579)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE">
+                    <h3>把San做成什么样</h3>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
+                    <script type="text/template">
+                    ## 组件化
+
+                    这里没必要再废话了
+
+                    ![盗用vue的图](img/components.png)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
+                    <script type="text/template">
+                    ## MVVM
+
+                    写的爽，开发效率高（vue为代表）
+
+
+                    ![](img/mvvm.png)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
+                    <script type="text/template">
+                    ## 特性
+
+                    - HTML模板语法
+                    - 模块化（ESNext、AMD、no-module）
+                    - use EDP / WebPack
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
+                    <script type="text/template">
+                    ## 差异
+
+                    - 兼容性 (如果可以，为什么不呢)
+                    - 体积 (越小越好)
+                    - 性能 (渲染时间、更新时间、内存占用)
+                    - 组件反解 (针对首屏的优化)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
+                    <script type="text/template">
+                    ### 一些理念上的不同 - methods
+
+                    ```javascript
+export default {
+    // ...
+
+    methods: {
+        doneTodo: function (index) {
+            let todo = this.todos[index];
+
+            if (!todo.done) {
+                doneTodo(todo.id).then(() => {
+                   todo.done = true;
+                });
+            }
+        },
+
+        rmTodo: function (index) {
+            rmTodo(this.todos[index].id).then(() => {
+                this.todos.splice(index, 1);
+            });
+        }
+    }
+}
+                    ```
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
+                    <script type="text/template">
+                    ### 一些理念上的不同 - props & data(state)
+
+                    ```javascript
+export default {
+    // ...
+
+    props: {
+        value: {
+            type: Date,
+            required: true
+        }
+    },
+
+    data() {
+        return {
+            left: -10000,
+            top: -10000,
+            slotName: 'Calendar'
+        };
+    },
+
+    methods: {
+        mainClick() {
+            if (this.left >= 0) {
+                this.hide();
+            }
+            else {
+                this.show();
+            }
+        },
+
+        hide: function () {
+            this.left = -10000;
+        },
+
+        show: function () {
+            let pos = $(this.$el).offset();
+            this.left = pos.left;
+            this.top = pos.top + this.$el.offsetHeight + 1;
+        }
+    }
+}
+                    ```
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
+                    <script type="text/template">
+                    ### 一些理念上的不同 - class & style
+
+                    ```html
+<ul class="ui-categorypicker">
+    <li 
+        v-for="(index, item) in datasource" 
+        v-bind:style="{'background': item.color}"
+        v-bind:class="{'selected': item.id == value}"
+        v-on:click="itemClick(index)"
+    >{{ item.title }}</li>
+</ul>
+                    ```
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
+                    <script type="text/template">
+                    ### 一些理念上的不同 - two-way binding
+
+                    ```html
+<input type="text" placeholder="标题" v-model="title">
+                    ```
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FFCECE" data-markdown>
+                    <script type="text/template">
+                    ### 一些理念上的不同 - 其他
+
+                    - components
+                    - filter
+                    - template
+
+                    所以我们经过一些讨论和磨合，造出了[San](https://ecomfe.github.io/san/)
+                    </script>
+                </section>
+
+                
+
+                <section data-background-transition="zoom" data-background="#FCFFCE">
+                    <h3>基于San我们能做什么</h3>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE">
+                    <h4>从一个体系来讲，San是落后的</h4>
+                    <p>我们缺什么</p>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ### 灵活的开发方式 ✅
+
+                    - AMD & ESNext
+                    - WebPack & EDP & ...
+
+                    [San Loader for WebPack(by 令君)](https://github.com/ecomfe/san-loader)
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ### 组件库 ❌
+
+                    组件库能很大程度减少业务开发工作量
+                    but, 我们现在只有组件框架的体系
+
+                    - 微信UI体系
+                    - material体系
+                    - 什么，我们自己的UI体系？这就多了
+
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ### router ❌
+
+                    没有router怎么玩
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE">
+                    <h3>应用程序架构 ❌</h3>
+
+                    <p>这两年大家在讨论什么？应用状态管理、单向流</p>
+
+                    <img src="img/state.png" width="460"><br>
+                    <span>我们还是要感谢react和flux的</span>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ### 还有其他的
+
+                    - 过渡动画
+                    - fetch
+                    - GraphQL
+                    - ServiceWorker
+                    - Server UI
+                    - ......
+
+                    
+                    </script>
+                </section>
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ### 上面这些，你要来玩吗
+
+                    - 收获：开发经验、被别人使用的成就感
+                    - 条件1：觉得这事好玩
+                    - 条件2：自己产品线有需要（新产品、遗留系统）
+                    </script>
+                </section>
+
+
+                <section data-background-transition="zoom" data-background="#FCFFCE" data-markdown>
+                    <script type="text/template">
+                    ### 最后，San的计划
+
+                    - 更细的拆分
+                    - template扩展
+                    - san-view
+                    </script>
+                </section>
+
+                <section>
+                    <h3>Thanks</h3>
+                </section>
+            </div>
+        </div>
+        <script src="../head.min.js"></script>
+        <script src="../reveal/js/reveal.js"></script>
+        <script>
+        Reveal.initialize({
+            controls: true,
+            progress: true,
+            history: true,
+            center: true,
+
+            transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+            // Optional reveal.js plugins
+            dependencies: [
+                { src: '../reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                { src: '../reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: '../reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: '../reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                { src: '../reveal/plugin/zoom-js/zoom.js', async: true },
+                { src: '../reveal/plugin/notes/notes.js', async: true }
+            ]
+        });
+        Reveal.configure({ slideNumber: 'c/t' });
+        </script>
+    </body>
+</html>
