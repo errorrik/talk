@@ -58,3 +58,6 @@ const MyApp = san.defineComponent({
 });
 ```
 
+在视图渲染的过程中，[San](https://github.com/baidu/san/) 会生成一棵这样子的树：
+
+![Render Tree](img/render-tree.png)
