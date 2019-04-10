@@ -19,3 +19,42 @@
 在正式开始之前，惯性先厚脸皮求下 [Star](https://github.com/baidu/san/)。
 
 
+## 视图创建
+
+
+考虑下面这个还算简单的组件：
+
+```js
+const MyApp = san.defineComponent({
+    template: `
+        <div>
+            <h3>{{title}}</h3>
+            <ul>
+                <li s-for="item,i in list">{{item}} <a on-click="removeItem(i)">x</a></li>
+            </ul>
+            <div>
+                <h4>Add</h4>
+                <input type="text" value="{=value=}">
+                <button on-click="addItem">add</button>
+            </div>
+        </div>
+    `,
+
+    initData() {
+        return {
+            title: 'List',
+            list: []
+        };
+    },
+
+    addItem() {
+        this.data.push('list', this.data.get('value'));
+        this.data.set('value', '');
+    },
+
+    removeItem(index) {
+        this.data.removeAt('list', index);
+    }
+});
+```
+
