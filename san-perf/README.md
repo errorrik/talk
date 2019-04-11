@@ -66,6 +66,142 @@ const MyApp = san.defineComponent({
 });
 ```
 
-在视图渲染的过程中，[San](https://github.com/baidu/san/) 会生成一棵这样子的树：
+在视图初次渲染完成后，[San](https://github.com/baidu/san/) 会生成一棵这样子的树：
 
 ![Render Tree](img/render-tree.png)
+
+
+那么，在这个过程里，[San](https://github.com/baidu/san/) 都做了哪些事情呢？
+
+
+### 模板解析
+
+在组件第一个实例被创建时，**template** 属性会被解析成 [ANode](https://github.com/baidu/san/blob/master/doc/anode.md)。
+
+![ANode](img/anode.png)
+
+[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 的含义是抽象节点树，包含了模板声明的所有信息，包括标签、文本、插值、数据绑定、条件、循环、事件等信息。对每个数据引用的声明，也会解析出具体的表达式对象。
+
+
+```json
+{
+    "directives": {},
+    "props": [],
+    "events": [],
+    "children": [
+        {
+            "directives": {
+                "for": {
+                    "item": "item",
+                    "value": {
+                        "type": 4,
+                        "paths": [
+                            {
+                                "type": 1,
+                                "value": "list"
+                            }
+                        ]
+                    },
+                    "index": "i",
+                    "raw": "item,i in list"
+                }
+            },
+            "props": [],
+            "events": [],
+            "children": [
+                {
+                    "textExpr": {
+                        "type": 7,
+                        "segs": [
+                            {
+                                "type": 5,
+                                "expr": {
+                                    "type": 4,
+                                    "paths": [
+                                        {
+                                            "type": 1,
+                                            "value": "item"
+                                        }
+                                    ]
+                                },
+                                "filters": [],
+                                "raw": "item"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "directives": {},
+                    "props": [],
+                    "events": [
+                        {
+                            "name": "click",
+                            "modifier": {},
+                            "expr": {
+                                "type": 6,
+                                "name": {
+                                    "type": 4,
+                                    "paths": [
+                                        {
+                                            "type": 1,
+                                            "value": "removeItem"
+                                        }
+                                    ]
+                                },
+                                "args": [
+                                    {
+                                        "type": 4,
+                                        "paths": [
+                                            {
+                                                "type": 1,
+                                                "value": "i"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "raw": "removeItem(i)"
+                            }
+                        }
+                    ],
+                    "children": [
+                        {
+                            "textExpr": {
+                                "type": 7,
+                                "segs": [
+                                    {
+                                        "type": 1,
+                                        "literal": "x",
+                                        "value": "x"
+                                    }
+                                ],
+                                "value": "x"
+                            }
+                        }
+                    ],
+                    "tagName": "a"
+                }
+            ],
+            "tagName": "li"
+        }
+    ],
+    "tagName": "ul"
+}
+```
+
+[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 保存着视图声明的数据引用与事件绑定信息，在视图的初次渲染与后续的视图更新中，都扮演着不可或缺的作用。
+
+无论一个组件被创建了多少个实例，**template** 的解析都只会进行一次。当然，预编译是可以做的。但因为 **template** 是用才解析，没有被使用的组件不会解析，所以就看实际使用中值不值，有没有必要了。
+
+
+### preheat
+
+## 视图更新
+
+### 阻断
+
+
+## 吹毛求疵
+
+在这个部分，我会列举一些大多数人觉得知道、但又不会这么去做的优化写法。这些优化写法貌似对性能没什么帮助，但是积少成多，带来的性能增益还是不可忽略的。
+
+
