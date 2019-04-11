@@ -1,0 +1,6 @@
+{
+    "name": "san-perf",
+    "dependencies": {
+        "echarts": "^4.2.1"
+    }
+}
