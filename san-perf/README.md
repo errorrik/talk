@@ -32,10 +32,14 @@ const MyApp = san.defineComponent({
             <ul>
                 <li s-for="item,i in list">{{item}} <a on-click="removeItem(i)">x</a></li>
             </ul>
+            <h4>Operation</h4>
             <div>
-                <h4>Add</h4>
+                Name:
                 <input type="text" value="{=value=}">
                 <button on-click="addItem">add</button>
+            </div>
+            <div>
+                <button on-click="reset">reset</button>
             </div>
         </div>
     `,
@@ -54,6 +58,10 @@ const MyApp = san.defineComponent({
 
     removeItem(index) {
         this.data.removeAt('list', index);
+    },
+
+    reset() {
+        this.data.set('list', []);
     }
 });
 ```
