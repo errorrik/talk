@@ -195,6 +195,37 @@ const MyApp = san.defineComponent({
 
 ### preheat
 
+在组件第一个实例被创建时，[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 会进行一个 **预热** 操作。看起来， **预热** 和 **template解析** 都是发生在第一个实例创建时，那他们有什么区别呢？
+
+1. **template解析** 生成的 [ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 是一个可以被 JSON stringify 的对象。
+2. 由于 1，所以 [ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 可以进行预编译。这种情况下，**template解析** 过程会被省略。而 **预热** 是必然会发生的。
+
+接下来，让我们看看预热到底生成了什么？
+
+```js
+aNode.hotspot = {
+    data: {},
+    dynamicProps: [],
+    xProps: [],
+    props: {},
+    sourceNode: sourceNode
+};
+```
+
+上面这个来自 [preheat-a-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js) 的简单代码节选不包含细节，但是可以看出， **预热** 过程生成了一个 `hotspot` 对象，其包含这样的一些属性：
+
+- data - 节点数据引用的摘要信息
+- dynamicProps - 节点上的动态属性
+- xProps - 节点上的双向绑定属性
+- props - 节点的属性索引
+- sourceNode - 用于节点生成的 HTMLElement
+
+
+
+更多的细节可以直接看 [preheat-a-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js)。在接下来的部分，对 `hotspot` 发挥作用的地方也会进行详细说明。
+
+
+
 ## 视图更新
 
 ### 阻断
