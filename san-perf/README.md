@@ -222,13 +222,135 @@ aNode.hotspot = {
 
 
 
-更多的细节可以直接看 [preheat-a-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js)。在接下来的部分，对 `hotspot` 发挥作用的地方也会进行详细说明。
+**预热** 的主要目的非常简单，就是把在模板信息中就能确定的事情提前，只做一遍，避免在 **渲染/更新** 过程中重复去做，从而节省时间。**预热** 过程更多的细节见 [preheat-a-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js)。在接下来的部分，对 `hotspot` 发挥作用的地方也会进行详细说明。
 
+### 视图创建过程
+
+![Render](img/anode-render.png)
+
+视图创建是个很常规的过程：基于初始的 **数据** 和 [ANode](https://github.com/baidu/san/blob/master/doc/anode.md)，创建一棵对象树，树中的每个节点负责自身在 DOM 树上节点的操作（创建、更新、删除）行为。对一个组件框架来说，创建对象树的操作无法省略，所以这个过程一定比原始地 createElement + appendChild 慢。
+
+因为这个过程比较常规，所以接下来不会描述整个过程，而是提一些有价值的优化点。
+
+
+#### cloneNode
+
+在 **预热** 阶段，我们根据 `tagName` 创建了 `sourceNode`。
+
+```js
+if (isBrowser && aNode.tagName
+    && !/^(template|slot|select|input|option|button)$/i.test(aNode.tagName)
+) {
+    sourceNode = createEl(aNode.tagName);
+}
+```
+
+[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 中包含了所有的属性声明，我们知道哪些属性是动态的，哪些属性是静态的。对于静态属性，我们可以在 **预热** 阶段就直接设置好。See [preheat-a-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L117-L137)
+
+
+```js
+each(aNode.props, function (prop, index) {
+    aNode.hotspot.props[prop.name] = index;
+    prop.handler = getPropHandler(aNode.tagName, prop.name);
+
+    // ......
+    if (prop.expr.value != null) {
+        if (sourceNode) {
+            prop.handler(sourceNode, prop.expr.value, prop.name, aNode);
+        }
+    }
+    else {
+        if (prop.x) {
+            aNode.hotspot.xProps.push(prop);
+        }
+        aNode.hotspot.dynamicProps.push(prop);
+    }
+});
+```
+
+
+在 **视图创建过程** 中，就可以从 `sourceNode` clone，并且只对动态属性进行设置。See [element-own-create.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-own-create.js#L28-L62)
+
+
+```js
+var sourceNode = this.aNode.hotspot.sourceNode;
+var props = this.aNode.props;
+
+if (sourceNode) {
+    this.el = sourceNode.cloneNode(false);
+    props = this.aNode.hotspot.dynamicProps;
+}
+else {
+    this.el = createEl(this.tagName);
+}
+
+// ...
+
+for (var i = 0, l = props.length; i < l; i++) {
+    var prop = props[i];
+    var propName = prop.name;
+    var value = isComponent
+        ? evalExpr(prop.expr, this.data, this)
+        : evalExpr(prop.expr, this.scope, this.owner);
+
+    // ...
+
+    prop.handler(this.el, value, propName, this, prop);
+    
+    // ...
+}
+```
+
+#### 属性操作
+
+不同属性对应 DOM 的操作方式是不同的，属性的 **预热** 提前保存了属性操作函数（[preheat-a-node.jsL119](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L119)），属性初始化或更新时就无需每次都重复获取。
+
+```js
+prop.handler = getPropHandler(aNode.tagName, prop.name);
+```
+
+对于 `s-bind`，对应的数据是 **预热** 阶段无法预知的，所以属性操作函数只能在具体操作时决定。See [element-own-create.jsL42](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-own-create.js#L42)
+
+```js
+for (var key in this._sbindData) {
+    if (this._sbindData.hasOwnProperty(key)) {
+        getPropHandler(this.tagName, key)( // 看这里看这里
+            this.el,
+            this._sbindData[key],
+            key,
+            this
+        );
+    }
+}
+```
+
+所以，`getPropHandler` 函数的实现也进行了相应的结果缓存。See [get-prop-handler.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/get-prop-handler.js#L247-L258)
+
+```js
+var tagPropHandlers = elementPropHandlers[tagName];
+if (!tagPropHandlers) {
+    tagPropHandlers = elementPropHandlers[tagName] = {};
+}
+
+var propHandler = tagPropHandlers[attrName];
+if (!propHandler) {
+    propHandler = defaultElementPropHandlers[attrName] || defaultElementPropHandler;
+    tagPropHandlers[attrName] = propHandler;
+}
+
+return propHandler;
+```
+
+#### 创建节点
 
 
 ## 视图更新
 
 ### 阻断
+
+### 列表的操作
+
+### keyed
 
 
 ## 吹毛求疵
