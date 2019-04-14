@@ -343,6 +343,52 @@ return propHandler;
 
 #### 创建节点
 
+视图创建过程中，[San](https://github.com/baidu/san/) 通过 `createNode` 工厂方法，根据 [ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 上每个节点的信息，创建组件的每个节点。
+
+[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 上与节点创建相关的信息有：
+
+- if 声明
+- for 声明
+- 标签名
+- 文本表达式
+
+节点类型有：
+
+- IfNode
+- ForNode
+- TextNode
+- Element
+- Component
+- SlotNode
+- TemplateNode
+
+因为每个节点都通过 `createNode` 方法创建，所以它的性能是极其重要的。那这个过程的实现，有哪些性能相关的考虑呢？
+
+首先，**预热** 过程提前选择好 [ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 节点对应的实际类型。See [preheat-a-node.jsL52](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L152) [preheat-a-node.jsL165](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L165) [preheat-a-node.jsL180](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L180) [preheat-a-node.jsL185](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L185-192)
+
+在 `createNode` 一开始就可以直接知道对应的节点类型。See [create-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/create-node.js#L24-26)
+
+```js
+if (aNode.Clazz) {
+    return new aNode.Clazz(aNode, parent, scope, owner);
+}
+```
+
+另外，我们可以看到，除了 Component 之外，其他节点类型的构造函数参数签名都是 `(aNode, parent, scope, owner, reverseWalker)`，并没有使用一个 Object 包起来，就是为了在节点创建过程避免创建无用的中间对象，浪费创建和回收的时间。
+
+```js
+function IfNode(aNode, parent, scope, owner, reverseWalker) {}
+function ForNode(aNode, parent, scope, owner, reverseWalker) {}
+function TextNode(aNode, parent, scope, owner, reverseWalker) {}
+function Element(aNode, parent, scope, owner, reverseWalker) {}
+function SlotNode(aNode, parent, scope, owner, reverseWalker) {}
+function TemplateNode(aNode, parent, scope, owner, reverseWalker) {}
+
+function Component(options) {}
+```
+
+而 Component 由于使用者可直接接触到，初始化参数的便利性就更重要些，所以初始化参数是一个 options 对象。
+
 
 ## 视图更新
 
