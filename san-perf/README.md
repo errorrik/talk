@@ -392,13 +392,62 @@ function Component(options) {}
 
 ## 视图更新
 
-### 从数据变更开始
+### 从数据变更到遍历更新
 
-在 [San](https://github.com/baidu/san/) 的组件中，当我们更改了数据，视图就会自动刷新。
+考虑上文中展示过的组件：
 
 ```js
-this.data.set('title', 'hello');
+const MyApp = san.defineComponent({
+    template: `
+        <div>
+            <h3>{{title}}</h3>
+            <ul>
+                <li s-for="item,i in list">{{item}} <a on-click="removeItem(i)">x</a></li>
+            </ul>
+            <h4>Operation</h4>
+            <div>
+                Name:
+                <input type="text" value="{=value=}">
+                <button on-click="addItem">add</button>
+            </div>
+            <div>
+                <button on-click="reset">reset</button>
+            </div>
+        </div>
+    `,
+
+    initData() {
+        return {
+            title: 'List',
+            list: []
+        };
+    },
+
+    addItem() {
+        this.data.push('list', this.data.get('value'));
+        this.data.set('value', '');
+    },
+
+    removeItem(index) {
+        this.data.removeAt('list', index);
+    },
+
+    reset() {
+        this.data.set('list', []);
+    }
+});
+
+let myApp = new MyApp();
+myApp.attach(document.body);
 ```
+
+当我们更改了数据，视图就会自动刷新。
+
+```js
+myApp.data.set('title', 'SampleList');
+```
+
+#### data
 
 我们可以很容易的发现，`data` 是：
 
@@ -406,18 +455,65 @@ this.data.set('title', 'hello');
 - 一个对象，提供了数据读取和操作的方法。See [数据操作文档](https://baidu.github.io/san/tutorial/data-method/)
 - Observable。每次数据的变更都会 `fire`，可以通过 `listen` 方法监听数据变更。See [data.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js)
 
-`data` 是变化可监听的，所以组件的视图变更就有了基础出发点。组件视图变更机制有几个关键的要素：
+`data` 是变化可监听的，所以组件的视图变更就有了基础出发点。
+
+#### 视图更新过程
+
+[San](https://github.com/baidu/san/) 最初设计的时候想法很简单：模板声明包含了对数据的引用，当数据变更时可以精准地只更新需要更新的节点，性能应该是很高的。从上面组件例子的模板中，一眼就能看出，title 数据的修改，只需要更新一个节点。但是，我们如何去找到它并执行视图更新动作呢？这就是组件的视图更新机制了。其中，有几个关键的要素：
 
 - 组件在初始化的过程中，创建了 `data` 实例并监听其数据变化。See [component.js#L256](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L256)
 - 视图更新是异步的。数据变化会被保存在一个数组里，在 `nextTick` 时批量更新。See [component.js#L779](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L779-L784)
-- 组件是个 `children` 属性串联的节点树，视图更新是个自上而下传递的过程：每个节点通过 `_update({Array}changes)` 方法接收数据变化信息，更新自身的视图，并向子节点传递数据变化信息。See [component.js#L685](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L685-L687) [element.js#L254](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element.js#L254-L256) ...
+- 组件是个 `children` 属性串联的节点树，视图更新是个自上而下遍历的过程。
+
+在节点树更新的遍历过程中，每个节点通过 `_update({Array}changes)` 方法接收数据变化信息，更新自身的视图，并向子节点传递数据变化信息。[component.js#L685](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L685-L687) 是组件向下遍历的起始，但从最典型的 [Element的_update方法](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element.js#L197-L258) 可以看得更清晰些：
+
+1. 先看自身的属性有没有需要更新的
+2. 然后把数据变化信息通过 `children` 往下传递。
+
+```js
+// 节选
+Element.prototype._update = function (changes) {
+    // ......
+
+    // 先看自身的属性有没有需要更新的
+    var dynamicProps = this.aNode.hotspot.dynamicProps;
+    for (var i = 0, l = dynamicProps.length; i < l; i++) {
+        var prop = dynamicProps[i];
+        var propName = prop.name;
+
+        for (var j = 0, changeLen = changes.length; j < changeLen; j++) {
+            var change = changes[j];
+
+            if (!isDataChangeByElement(change, this, propName)
+                && changeExprCompare(change.expr, prop.hintExpr, this.scope)
+            ) {
+                prop.handler(this.el, evalExpr(prop.expr, this.scope, this.owner), propName, this, prop);
+                break;
+            }
+        }
+    }
+
+    // ......
+
+    // 然后把数据变化信息通过 children 往下传递
+    for (var i = 0, l = this.children.length; i < l; i++) {
+        this.children[i]._update(changes);
+    }
+};
+```
+
+下面这张图说明了在节点树中，`this.data.set('title', 'hello')` 带来的视图刷新，遍历过程与数据变化信息的传递经过了哪些节点。左侧最大的点是实际需要更新的节点，红色的线代表遍历过程经过的路径，红色的小圆点代表遍历到的节点。可以看出，虽然需要进行视图更新的节点只有一个，但所有的节点都被遍历到了。
+
+![Update Flow](img/update-flow.png)
 
 
 ### 阻断
 
+### Immutable
+
 ### 列表的操作
 
-### keyed
+#### keyed
 
 
 ## 吹毛求疵
