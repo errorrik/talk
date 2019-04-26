@@ -529,9 +529,105 @@ Element.prototype._update = function (changes) {
 
 ![Update Flow](img/update-flow-opti.png)
 
-有没有是曾相识的感觉？是不是很像 [React](https://reactjs.org/) 中的 [shouldComponentUpdate](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action)？不过不同的是，由于模板声明包含了对数据的引用，[San](https://github.com/baidu/san/) 可以在框架层面自动做到这一点，组件开发者不需要人工去干这件事了。
+有没有似曾相识的感觉？是不是很像 [React](https://reactjs.org/) 中的 [shouldComponentUpdate](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action)？不过不同的是，由于模板声明包含了对数据的引用，[San](https://github.com/baidu/san/) 可以在框架层面自动做到这一点，组件开发者不需要人工去干这件事了。
+
+
+### 属性更新
+
+在视图创建过程的章节中，提到过在 **预热** 过程中，我们得到了：
+
+- dynamicProps：哪些属性是动态的。See [preheat-a-node.js#L117](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L117-L137)
+- prop.handler：属性的设置操作函数。See [preheat-a-node.jsL119](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L119)
+
+
+```html
+<input type="text" value="{=value=}">
+```
+
+在上面这个例子中，`dynamicProps` 只包含 `value`，不包含 `type`。
+
+
+所以在节点的属性更新时，我们只需要遍历 `hotspot.dynamicProps`，并且直接使用 `prop.handler` 来执行属性更新。See [element.js#L197-L258](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element.js#L197-L258)
+
+```js
+Element.prototype._update = function (changes) {
+    // ......
+
+    // 先看自身的属性有没有需要更新的
+    var dynamicProps = this.aNode.hotspot.dynamicProps;
+    for (var i = 0, l = dynamicProps.length; i < l; i++) {
+        var prop = dynamicProps[i];
+        var propName = prop.name;
+
+        for (var j = 0, changeLen = changes.length; j < changeLen; j++) {
+            var change = changes[j];
+
+            if (!isDataChangeByElement(change, this, propName)
+                && changeExprCompare(change.expr, prop.hintExpr, this.scope)
+            ) {
+                prop.handler(this.el, evalExpr(prop.expr, this.scope, this.owner), propName, this, prop);
+                break;
+            }
+        }
+    }
+
+    // ......
+};
+```
+
 
 ### Immutable
+
+[Immutable](https://en.wikipedia.org/wiki/Immutable_object) 在视图更新中最大的意义是，可以无脑认为 === 时，数据是没有变化的。在很多场景下，对视图是否需要更新的判断变得简单很多。否则判断的成本对应用来说是不可接受的。
+
+
+但是，[Immutable](https://en.wikipedia.org/wiki/Immutable_object) 可能会导致开发过程的更多成本。如果开发者不借助任何库，只使用原始的 JavaScript，一个对象的赋值会写的有些麻烦。
+
+```js
+var obj = {
+    a: 1,
+    b: {
+        b1: 2,
+        b2: 3
+    },
+    c: 2
+};
+
+// mutable
+obj.b.b1 = 5;
+
+// immutable
+obj = Object.assign({}, obj, {b: Object.assign({}, obj.b, {b1: 5})});
+```
+
+[San](https://github.com/baidu/san/) 的[数据操作](https://baidu.github.io/san/tutorial/data-method/)是通过 data 上的方法提供的，所以内部实现可以天然 immutable，这利于视图更新操作中的一些判断。See [data.js#L207](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L207)
+
+由于视图刷新是根据数据变化信息进行的，所以判断当数据没有变化时，不产生数据变化信息就行了。See [data.js#L202](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L202) [for-node.jsL555](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L555) [L580](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L580) [L629](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L629) [L683](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L683)
+
+[San](https://github.com/baidu/san/) 期望开发者对数据操作细粒度的使用[数据操作方法](https://baidu.github.io/san/tutorial/data-method/)。否则，不熟悉 immutable 的开发者可能会碰到如下情况。
+
+```js
+// 假设初始数据如下
+/*
+{
+    a: 1,
+    b: {
+        b1: 2,
+        b2: 3
+    }
+}
+*/
+
+var b = this.data.get('b');
+b.b1 = 5;
+
+// 由于 b 对象引用不变，会导致视图不刷新
+this.data.set('b', b);
+
+// 正确做法。set 操作在 san 内部是 immutable 的
+this.data.set('b.b1', 5);
+```
+
 
 ### 列表的操作
 
@@ -542,4 +638,12 @@ Element.prototype._update = function (changes) {
 
 在这个部分，我会列举一些大多数人觉得知道、但又不会这么去做的优化写法。这些优化写法貌似对性能没什么帮助，但是积少成多，带来的性能增益还是不可忽略的。
 
+### 避免 call 和 apply
+
+### 减少中间对象
+
+### 减少函数调用
+
+
+## 最后
 
