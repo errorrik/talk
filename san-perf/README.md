@@ -640,6 +640,31 @@ this.data.set('b.b1', 5);
 
 ### 避免 call 和 apply
 
+call 和 apply 是 JavaScript 中的魔法，也是性能的大包袱。在 [San](https://github.com/baidu/san/) 中，我们尽可能减少 call 和 apply 的使用。
+
+
+比如，对 filter 的处理中，内置的 filter 由于都是 pure function，我们明确知道运行结果不依赖 this，并且参数个数都是确定的，所以无需使用 call。See [eval-expr#L164-L72](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/eval-expr#L164-L72)
+
+```js
+if (owner.filters[filterName]) {
+    value = owner.filters[filterName].apply(
+        owner,
+        [value].concat(evalArgs(filter.args, data, owner))
+    );
+}
+else if (DEFAULT_FILTERS[filterName]) {
+    value = DEFAULT_FILTERS[filterName](value);
+}
+```
+
+再比如，Component 和 Element 之间应该是继承关系，create、attach、dispose、toPhase 等方法有很多可以复用的逻辑。基于性能的考虑，实现中并没有让 Component 和 Element 发生关系。对于复用的部分：
+
+- 复用逻辑较少的直接再写一遍（See [component.js#L352](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L352)）
+- 复用逻辑多的，部分通过函数直接调用的形式复用（See [element-dispose-children.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-dispose-children.js)），部分通过函数挂载到 prototype 成为实例方法的形式复用（See [element-own-create.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-own-create.js)）。场景和例子比较多，就不一一列举了。
+
+
+
+
 ### 减少中间对象
 
 ### 减少函数调用
