@@ -640,7 +640,7 @@ this.data.set('b.b1', 5);
 
 ### 避免 call 和 apply
 
-call 和 apply 是 JavaScript 中的魔法，也是性能的大包袱。在 [San](https://github.com/baidu/san/) 中，我们尽可能减少 call 和 apply 的使用。
+call 和 apply 是 JavaScript 中的魔法，也是性能的大包袱。在 [San](https://github.com/baidu/san/) 中，我们尽可能减少 call 和 apply 的使用。下面列两个点：
 
 
 比如，对 filter 的处理中，内置的 filter 由于都是 pure function，我们明确知道运行结果不依赖 this，并且参数个数都是确定的，所以无需使用 call。See [eval-expr#L164-L72](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/eval-expr#L164-L72)
@@ -666,7 +666,35 @@ else if (DEFAULT_FILTERS[filterName]) {
 
 ### 减少中间对象
 
+看到这里的你不知是否记得，在 **创建节点** 章节中，提到节点的函数签名不合并成一个数组，就是为了防止中间对象的创建。中间对象不止是创建时有开销，触发 GC 回收内存也是有开销的。在 [San](https://github.com/baidu/san/) 的实现中，我们尽可能避免中间对象的创建。下面列两个点：
+
+数据操作的过程，直接传递表达式层级数组，以及当前指针位置。不使用 slice 创建表达式子层级数组。See [data.js#L136](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L136)
+
+```js
+
+function immutableSet(source, exprPaths, pathsStart, pathsLen, value, data) {
+    if (pathsStart >= pathsLen) {
+        return value;
+    }
+
+    // ......
+}
+```
+
+data 创建时如果传入初始数据对象，以此为准，避免 extend 使初始数据对象变成中间对象。See [data.js#L23](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L23)
+
+```js
+function Data(data, parent) {
+    this.parent = parent;
+    this.raw = data || {};
+    this.listeners = [];
+}
+```
+
+
 ### 减少函数调用
+
+### 减少对象遍历
 
 
 ## 最后
