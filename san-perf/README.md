@@ -710,6 +710,9 @@ var child = childANode.Clazz
 buf += seg.value || evalExpr(seg, data, owner);
 ```
 
+另外，还有很重要的一点：[San](https://github.com/baidu/san/) 里虽然实现了 `each` 方法，但是在视图创建、视图更新、变更判断、表达式取值等关键性的过程中，还是直接使用 for 进行遍历，就是为了减少不必要的函数调用开销。See [each.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/util/each.js) [eval-expr.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/eval-expr.js) etc...
+
+
 ### 减少对象遍历
 
 
