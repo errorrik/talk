@@ -694,6 +694,22 @@ function Data(data, parent) {
 
 ### 减少函数调用
 
+函数调用本身的开销是很小的，但是调用本身也会初始化环境对象，调用结束后环境对象也需要被回收。所以我们对函数调用较为频繁的地方，做了避免调用的条件判断。下面列两个点：
+
+element 在创建子元素时，判断子元素构造器是否存在，如果存在则无需调用 createNode 函数。See [element.js#L167-L169](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element.js#L167-L169)
+
+```js
+var child = childANode.Clazz
+    ? new childANode.Clazz(childANode, this, this.scope, this.owner)
+    : createNode(childANode, this, this.scope, this.owner);
+```
+
+[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 中对定值表达式（数字、bool、字符串字面量）的值保存在对象的 value 属性中。`evalExpr` 方法开始时根据 `expr.value != null` 返回。不过在调用频繁的场景（比如文本的拼接、表达式变化比对、等等），会提前进行一次判断，减少 `evalExpr` 的调用。See [eval-expr.js#L203](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/eval-expr.js#L203) [change-expr-compare.js#L77](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/change-expr-compare.js#L77)
+
+```js
+buf += seg.value || evalExpr(seg, data, owner);
+```
+
 ### 减少对象遍历
 
 
