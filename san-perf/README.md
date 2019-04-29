@@ -631,6 +631,56 @@ this.data.set('b.b1', 5);
 
 ### 列表的操作
 
+上文中我们提到，[San](https://github.com/baidu/san/) 的视图更新机制是基于数据变化信息的。[数据操作方法](https://baidu.github.io/san/tutorial/data-method/) 提供了一系列方法，会 fire changeObj。changeObj 只有两种类型： **SET** 和 **SPLICE**。See [data-change-type.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data-change-type.js) [data.js#L209-L213](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L209-L213) [data.js#L350-L358](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L350-L358)
+
+```js
+// SET
+changeObj = {
+    type: DataChangeType.SET,
+    expr: expr,
+    value: value,
+    option: option
+};
+
+// SPLICE
+changeObj = {
+    expr: expr,
+    type: DataChangeType.SPLICE,
+    index: index,
+    deleteCount: returnValue.length,
+    value: returnValue,
+    insertions: args.slice(2),
+    option: option
+};
+```
+
+[San](https://github.com/baidu/san/) 提供的[数据操作方法](https://baidu.github.io/san/tutorial/data-method/)里，很多是针对数组的，并且大部分与 JavaScript 原生的数组方法是一致的。从 changeObj 的类型可以容易看出，最基础的方法只有 `splice` 一个，其他方法都是 `splice` 之上的封装。
+
+- push
+- pop
+- shift
+- unshift
+- remove
+- removeAt
+- splice
+
+
+基于数据变化信息的视图更新机制，意味着数据操作的粒度越细越精准，视图更新的负担越小性能越高。
+
+```js
+// bad performance
+this.data.set('list[0]', {
+    name: 'san',
+    id: this.data.get('list[0].id')
+});
+
+// good performance
+this.data.set('list[0].name', 'san');
+```
+
+下面，我们结合常见的列表数据变更场景，说说 [San](https://github.com/baidu/san/) 对列表的视图更新，都有哪些性能优化的手段。
+
+
 #### keyed
 
 
