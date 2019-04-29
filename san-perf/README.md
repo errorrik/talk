@@ -694,7 +694,7 @@ function Data(data, parent) {
 
 ### 减少函数调用
 
-函数调用本身的开销是很小的，但是调用本身也会初始化环境对象，调用结束后环境对象也需要被回收。所以我们对函数调用较为频繁的地方，做了避免调用的条件判断。下面列两个点：
+函数调用本身的开销是很小的，但是调用本身也会初始化环境对象，调用结束后环境对象也需要被回收。[San](https://github.com/baidu/san/) 对函数调用较为频繁的地方，做了避免调用的条件判断。下面列两个点：
 
 element 在创建子元素时，判断子元素构造器是否存在，如果存在则无需调用 createNode 函数。See [element.js#L167-L169](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element.js#L167-L169)
 
@@ -714,6 +714,69 @@ buf += seg.value || evalExpr(seg, data, owner);
 
 
 ### 减少对象遍历
+
+使用 for...in 进行对象的遍历是非常耗时的操作，[San](https://github.com/baidu/san/) 在视图创建、视图更新等过程中，当运行过程明确时，尽可能不使用 for...in 进行对象的遍历。一个比较容易被忽略的场景是对象的 extend，其隐藏了 for...in 遍历过程。
+
+```js
+function extend(target, source) {
+    for (var key in source) {
+        if (source.hasOwnProperty(key)) {
+            var value = source[key];
+            if (typeof value !== 'undefined') {
+                target[key] = value;
+            }
+        }
+    }
+
+    return target;
+}
+```
+
+从一个对象创建一个大部分成员都一样的新对象时，避免使用 `extend`。See [for-node.jsL404](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L404)
+
+```js
+// bad performance
+change = extend(
+    extend({}, change),
+    {
+        expr: createAccessor(this.itemPaths.concat(changePaths.slice(forLen + 1)))
+    }
+);
+
+// good performance
+change = change.type === DataChangeType.SET
+    ? {
+        type: change.type,
+        expr: createAccessor(
+            this.itemPaths.concat(changePaths.slice(forLen + 1))
+        ),
+        value: change.value,
+        option: change.option
+    }
+    : {
+        index: change.index,
+        deleteCount: change.deleteCount,
+        insertions: change.insertions,
+        type: change.type,
+        expr: createAccessor(
+            this.itemPaths.concat(changePaths.slice(forLen + 1))
+        ),
+        value: change.value,
+        option: change.option
+    };
+```
+
+将一个对象的成员赋予另一个对象时，避免使用 `extend`。See [component.jsL114](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L114)
+
+```js
+// bad performance
+extend(this, options);
+
+// good performance
+this.owner = options.owner;
+this.scope = options.scope;
+this.el = options.el;
+```
 
 
 ## 最后
