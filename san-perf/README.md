@@ -637,20 +637,20 @@ this.data.set('b.b1', 5);
 // SET
 changeObj = {
     type: DataChangeType.SET,
-    expr: expr,
-    value: value,
-    option: option
+    expr,
+    value,
+    option
 };
 
 // SPLICE
 changeObj = {
-    expr: expr,
     type: DataChangeType.SPLICE,
-    index: index,
-    deleteCount: returnValue.length,
-    value: returnValue,
-    insertions: args.slice(2),
-    option: option
+    expr,
+    index,
+    deleteCount,
+    value,
+    insertions,
+    option
 };
 ```
 
