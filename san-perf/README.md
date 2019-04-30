@@ -629,7 +629,9 @@ this.data.set('b.b1', 5);
 ```
 
 
-### 列表的操作
+### 列表更新
+
+#### 列表数据操作方法
 
 上文中我们提到，[San](https://github.com/baidu/san/) 的视图更新机制是基于数据变化信息的。[数据操作方法](https://baidu.github.io/san/tutorial/data-method/) 提供了一系列方法，会 fire changeObj。changeObj 只有两种类型： **SET** 和 **SPLICE**。See [data-change-type.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data-change-type.js) [data.js#L209-L213](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L209-L213) [data.js#L350-L358](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L350-L358)
 
@@ -678,9 +680,57 @@ this.data.set('list[0]', {
 this.data.set('list[0].name', 'san');
 ```
 
-[San](https://github.com/baidu/san/) 的 [ForNode](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js) 负责列表的渲染和更新，其 _update 方法接收数据变化信息后，是怎么处理的呢？
+#### 更新过程
+
+我们看个简单的例子：下图中，我们要把第一行的列表更新成第二行，需要插入绿色部分，更新黄色部分，删除红色部分。
 
 ![List Update](img/list-eg.png)
+
+[San](https://github.com/baidu/san/) 的 [ForNode](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js) 负责列表的渲染和更新。在更新过程里：
+
+- [_update](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L242) 方法接收数据变化信息后，根据类型进行分发
+- [_updateArray](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L350) 负责处理数组类型的更新。其遍历数据变化信息，计算得到更新动作，最后执行更新行为。
+
+假设数据变化信息为：
+
+```js
+[
+    // insert [2, 3], pos 1
+    // update 4
+    // remove 7
+    // remove 10
+]
+```
+
+在遍历数据变化信息前，我们先初始化一个和当前 children 等长的数组：childrenChanges。其用于存储 children 里每个子节点的数据变化信息。See [for-node.js#L352](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L352)
+
+同时，我们初始化一个 disposeChildren 数组，用于存储需要被删除的节点。See [for-node.js#L362](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L362)
+
+![childrenChanges](img/children-changes.png)
+
+
+接下来，[_updateArray](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L376) 循环处理数据变化信息。当遇到插入时，同时扩充 children 和 childrenChanges 数组。此时用于扩充数组的只是占位，不初始化新节点。
+
+![childrenChanges](img/children-changes-insert.png)
+
+当遇到更新时，如果更新对应的是某一项，则对应该项的 childrenChanges 添加更新信息。
+
+![childrenChanges](img/children-changes-update.png)
+
+当遇到删除时，我们把要删除的子节点从 children 移除，放入 disposeChildren。同时，childrenChanges 里相应位置的项也被移除。
+
+![childrenChanges](img/children-changes-remove.png)
+
+遍历数据变化信息结束后，执行更新行为分成两步：See [for-node.js#L724-L775](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L724-L775)
+
+1. 先执行删除 disposeChildren
+2. 遍历 children，对标记全新的子节点执行创建与插入，对存在的节点根据 childrenChanges 相应位置的信息执行更新
+
+```js
+this._disposeChildren(disposeChildren, function () {
+    doCreateAndUpdate();
+});
+```
 
 
 下面，我们结合常见的列表数据变更场景，说说 [San](https://github.com/baidu/san/) 对列表的视图更新，都有哪些性能优化的手段。
