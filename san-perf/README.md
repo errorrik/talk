@@ -751,6 +751,29 @@ childrenChanges.splice.apply(childrenChanges, spliceArgs);
 
 #### 删除项
 
+前文中提过，视图创建的过程，对于 DOM 的创建是挨个 `createElement` 并 `appendChild` 到 `parentNode` 中的。但是在删除的时候，我们并不需要把整棵子树上的节点都挨个删除，只需要把要删除子树的根元素从 `parentNode` 中 `removeChild`。
+
+所以，对于 Element、TextNode、ForNode、IfNode 等节点的 `dispose` 方法，都包含一个隐藏参数：`noDetach`。当接收到的值为 `true` 时，节点只做必要的清除操作（移除 DOM 上挂载的事件、清理节点树的引用关系），不执行其对应 DOM 元素的删除操作。See [text-node.js#L118](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/text-node.js#L118) [node-own-simple-dispose.js#L22](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/node-own-simple-dispose.js#L22) [element-own-leave.js#L42](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-own-leave.js#L42) etc...
+
+```js
+if (!noDetach) {
+    removeEl(this.el);
+}
+```
+
+另外，在很多情况下，一次视图更新周期中如果有数组项的删除，是不会有对其他项的更新操作的。所以我们增加了 [isOnlyDispose](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L368) 变量用于记录是否只包含数组项删除操作。在 **执行更新** 阶段，如果该项为 `true`，则完成删除动作后不再遍历 `children` 进行子项更新。See [for-node.js#L739](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L739)
+
+```js
+if (isOnlyDispose) {
+    return;
+}
+
+// 对相应的项进行更新
+// 如果不attached则直接创建，如果存在则调用更新函数
+for (var i = 0; i < newLen; i++) {
+}
+```
+
 #### length
 
 数据变化（添加项、删除项等）可能会导致数组长度变化，数组长度也可能会被数据引用。
