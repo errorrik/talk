@@ -768,7 +768,7 @@ childrenChanges.splice.apply(childrenChanges, spliceArgs);
 
 首先，当数组长度为 0 时，显然整个列表项直接清空就行了，数据变化信息可以完全忽略，不需要进行多余的遍历。See [for-node.js#L248-L252](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L248-L252)
 
-其次，如果一个元素里的所有元素都是由列表项组成的，那么元素的删除可以通过暴力的一次 `parentNode.textContent = ''` 完成，无需逐项从父元素中移除。See [for-node.js#L318-L335](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L318-L335)
+其次，如果一个元素里的所有元素都是由列表项组成的，那么元素的删除可以**暴力清除**：通过一次 `parentNode.textContent = ''` 完成，无需逐项从父元素中移除。See [for-node.js#L318-L335](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L318-L335)
 
 ```js
 // 代码节选
