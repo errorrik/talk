@@ -678,6 +678,11 @@ this.data.set('list[0]', {
 this.data.set('list[0].name', 'san');
 ```
 
+[San](https://github.com/baidu/san/) 的 [ForNode](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js) 负责列表的渲染和更新，其 _update 方法接收数据变化信息后，是怎么处理的呢？
+
+![List Update](list-eg.png)
+
+
 下面，我们结合常见的列表数据变更场景，说说 [San](https://github.com/baidu/san/) 对列表的视图更新，都有哪些性能优化的手段。
 
 
