@@ -709,7 +709,7 @@ this.data.set('list[0].name', 'san');
 ![childrenChanges](img/children-changes.png)
 
 
-接下来，[_updateArray](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L376) 循环处理数据变化信息。当遇到插入时，同时扩充 children 和 childrenChanges 数组。此时用于扩充数组的只是占位，不初始化新节点。
+接下来，[_updateArray](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L376) 循环处理数据变化信息。当遇到插入时，同时扩充 children 和 childrenChanges 数组。
 
 ![childrenChanges](img/children-changes-insert.png)
 
@@ -733,10 +733,34 @@ this._disposeChildren(disposeChildren, function () {
 ```
 
 
-下面，我们结合常见的列表数据变更场景，说说 [San](https://github.com/baidu/san/) 对列表的视图更新，都有哪些性能优化的手段。
+下面，我们看看常见的列表更新场景下， [San](https://github.com/baidu/san/) 都有哪些性能优化的手段。
+
+
+#### 插入项
+
+在遍历数据变化信息时，遇到插入项，往 children 和 childrenChanges 中填充的只是 `undefined` 或 `0` 的占位值，不初始化新节点。See [for-node.js#L518-L520](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L518-L520)
+
+```js
+var spliceArgs = [changeStart + deleteCount, 0].concat(new Array(newCount));
+this.children.splice.apply(this.children, spliceArgs);
+childrenChanges.splice.apply(childrenChanges, spliceArgs);
+```
+
+由于 [San](https://github.com/baidu/san/) 的视图是异步更新的，当前更新周期可能包含多个数据操作。如果这些数据操作中创建了一个项又删除了的话，在遍历数据变化信息过程中初始化新节点就是没有必要的浪费。所以创建节点的操作放到后面 **执行更新** 的阶段。
+
+
+#### 删除项
+
+#### length
+
+#### 清空
+
+#### 整项变更
 
 
 #### keyed
+
+
 
 
 ## 吹毛求疵
