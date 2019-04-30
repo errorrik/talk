@@ -736,9 +736,9 @@ this._disposeChildren(disposeChildren, function () {
 下面，我们看看常见的列表更新场景下， [San](https://github.com/baidu/san/) 都有哪些性能优化的手段。
 
 
-#### 插入项
+#### 添加项
 
-在遍历数据变化信息时，遇到插入项，往 children 和 childrenChanges 中填充的只是 `undefined` 或 `0` 的占位值，不初始化新节点。See [for-node.js#L518-L520](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L518-L520)
+在遍历数据变化信息时，遇到添加项，往 children 和 childrenChanges 中填充的只是 `undefined` 或 `0` 的占位值，不初始化新节点。See [for-node.js#L518-L520](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L518-L520)
 
 ```js
 var spliceArgs = [changeStart + deleteCount, 0].concat(new Array(newCount));
@@ -753,7 +753,20 @@ childrenChanges.splice.apply(childrenChanges, spliceArgs);
 
 #### length
 
+数据变化（添加项、删除项等）可能会导致数组长度变化，数组长度也可能会被数据引用。
+
+```html
+<li s-for="item, index in list">{{index + 1}}/{{list.length}} item</li>
+```
+
+在这种场景下，即使只添加或删除一项，整个列表视图都需要被刷新。由于子节点的更新是在 **执行更新** 阶段通过 _update 方法传递数据变化信息的，所以在 **执行更新** 前，我们根据以下两个条件，判断是否需要为子节点增加 length 变更信息。See [for-node.js#L704-L719](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L704-L719)
+
+- 数组长度是否发生变化
+- 通过数据摘要判断子项视图是否依赖 length 数据。这个条件是否存在，不会改变视图更新结果，但是可以减少子项更新的成本。
+
 #### 清空
+
+#### 子项更新
 
 #### 整项变更
 
