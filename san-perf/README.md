@@ -810,10 +810,38 @@ if (violentClear) {
 
 #### 子项更新
 
+想象下面这个列表数据子项的变更：
+
+```js
+myApp.data.set('list[2]', 'two');
+```
+
+对于 ForNode 的更新：
+
+- 首先使用 [changeExprCompare](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L378) 方法判断数据变化对象与列表引用数据声明之间的关系。See [change-expr-compare.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/change-expr-compare.js)
+- 如果属于子项更新，则转换成对应子项的数据变更信息，其他子项对该信息无感知。See [for-node.js#L426](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L426)
+
+![Update For Item](img/update-for-item.png)
+
+从上图的更新过程可以看出，子项更新的更新过程能精确处理最少的节点。数据变更时精准地更新节点是 [San](https://github.com/baidu/san/) 的优势。
+
+
 #### 整列表变更
 
+对于整列表变更，[San](https://github.com/baidu/san/) 的处理原则是：尽可能重用当前存在的节点。原列表与新列表数据相比：
 
-#### keyed
+- 原列表项更多
+- 新列表项更多
+- 一样多
+
+我们采用了如下的处理过程，保证原列表与新列表重叠部分节点执行更新操作，无需删除再创建：
+
+1. 如果原列表项更多，从尾部开始把多余的部分标记清除。See [for-node.js#L669-L673](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L669-L673)
+2. 从起始遍历新列表。如果在旧列表长度范围内，标记更新(See [for-node.js#L682-L692](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L682-L692))；如果是新列表多出的部分，标记新建(See [for-node.js#L694](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L694))。
+
+[San](https://github.com/baidu/san/) 鼓励开发者细粒度的使用[数据操作方法](https://baidu.github.io/san/tutorial/data-method/)，但总有无法精准进行数据操作，只能直接 set 整个数组。举一个最常见的例子：数据是从服务端返回的 JSON。在这种场景下，就是 trackBy 发挥作用的时候了。
+
+#### trackBy
 
 
 
