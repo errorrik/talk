@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <script src="../node_modules/echarts/dist/echarts.js"></script>
+    <style>body{margin-left:100px;}</style>
+</head>
+
+<body>
+    <div id="main" style="width: 800px;height:600px;"></div>
+    <script>
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+var renderTreeData = {
+    "name": "div",
+    "children": [
+        {
+            "name": "h3",
+            "children": [
+                {
+                    "name": "text"
+                }
+            ]
+        },
+        {
+            "name": "ul",
+            "children": [
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                }
+            ]
+        },
+        
+        {
+            "name": "h4",
+            "children": [
+                {
+                    "name": "text"
+                }
+            ]
+        },
+        
+        {
+            "name": "div",
+            "children": [
+                {
+                    "name": "text"
+                },
+                {
+                    "name": "input"
+                },
+                {
+                    "name": "button",
+                    children: [{name: 'text'}]
+                }
+            ]
+        },
+        
+        {
+            "name": "div",
+            "children": [
+                {
+                    "name": "button",
+                    children: [{name: 'text'}]
+                }
+            ]
+        }
+    ]
+};
+
+var aNodeData = {
+    "name": "div",
+    "children": [
+        {
+            "name": "h3",
+            "children": [
+                {
+                    "name": "text"
+                }
+            ]
+        },
+        {
+            "name": "ul",
+            "children": [
+                {
+                    "name": "li[s-for]",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                }
+            ]
+        },
+        
+        {
+            "name": "h4",
+            "children": [
+                {
+                    "name": "text"
+                }
+            ]
+        },
+        
+        {
+            "name": "div",
+            "children": [
+                {
+                    "name": "text"
+                },
+                {
+                    "name": "input"
+                },
+                {
+                    "name": "button",
+                    children: [{name: 'text'}]
+                }
+            ]
+        },
+        
+        {
+            "name": "div",
+            "children": [
+                {
+                    "name": "button",
+                    children: [{name: 'text'}]
+                }
+            ]
+        }
+    ]
+};
+
+var updateData = {
+    "name": "div",
+            itemStyle: {
+                    borderColor: '#c23531'
+                },
+    "children": [
+        {
+            "name": "h3",
+            "children": [
+                {
+                    "name": "text",
+                    symbolSize: 15,
+                    symbol: 'circle',
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531',color: '#c23531'
+                }
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                },
+        },
+        {
+            "name": "ul",
+            "children": [
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                }
+        },
+        
+        {
+            "name": "h4",
+            "children": [
+                {
+                    "name": "text"
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                }
+        },
+        
+        {
+            "name": "div",
+            "children": [
+                {
+                    "name": "text"
+                },
+                {
+                    "name": "input"
+                },
+                {
+                    "name": "button",
+                    children: [{name: 'text'}]
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                }
+        },
+        
+        {
+            "name": "div",
+            "children": [
+                {
+                    "name": "button",
+                    children: [{name: 'text'}]
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                }
+        }
+    ]
+};
+
+
+var updatListData = {
+    "name": "div",
+            itemStyle: {
+                    borderColor: '#c23531'
+                },
+    "children": [
+        {
+            "name": "h3",
+            "children": [
+                {
+                    "name": "text"
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                },
+        },
+        {
+            "name": "ul",
+            "children": [
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text",
+            symbolSize: 15,
+                    symbol: 'circle',
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531',color: '#c23531'
+                }},
+                        {"name": "a", children: [{name: 'text'}],
+            itemStyle: {
+                    borderColor: '#c23531'
+                },
+            lineStyle: {
+                color: '#c23531'
+            }}
+                    ],
+            itemStyle: {
+                    borderColor: '#c23531'
+                },
+            lineStyle: {
+                color: '#c23531'
+            }
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                },
+                {
+                    "name": "li",
+                    "children": [
+                        {"name": "text"},
+                        {"name": "a", children: [{name: 'text'}]}
+                    ]
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                }
+        },
+        
+        {
+            "name": "h4",
+            "children": [
+                {
+                    "name": "text"
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                }
+        },
+        
+        {
+            "name": "div",
+            "children": [
+                {
+                    "name": "text"
+                },
+                {
+                    "name": "input"
+                },
+                {
+                    "name": "button",
+                    children: [{name: 'text'}]
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                }
+        },
+        
+        {
+            "name": "div",
+            "children": [
+                {
+                    "name": "button",
+                    children: [{name: 'text'}]
+                }
+            ],
+            lineStyle: {
+                color: '#c23531'
+            },
+            itemStyle: {
+                    borderColor: '#c23531'
+                }
+        }
+    ]
+};
+
+    // 指定图表的配置项和数据
+    var option = {
+        tooltip: {
+            trigger: 'item',
+            triggerOn: 'mousemove'
+        },
+        series:[
+            {
+                type: 'tree',
+
+                data: [updatListData],
+                left: '2%',
+                right: '2%',
+                top: '8%',
+                bottom: '20%',
+
+                symbol: 'emptyCircle',
+
+                orient: 'vertical',
+
+                expandAndCollapse: true,
+                initialTreeDepth: 4,
+
+                label: {
+                    normal: {
+                        position: 'top',
+                        verticalAlign: 'middle',
+                        fontSize: 16,
+                        distance: 10
+                    }
+                },
+
+                leaves: {
+                    label: {
+                        normal: {
+                            position: 'bottom',
+                            rotate: -90,
+                            verticalAlign: 'middle',
+                            align: 'left'
+                        }
+                    }
+                },
+
+itemStyle: {
+                    borderColor: '#ccc'
+                },
+                animationDurationUpdate: 750
+            }
+        ]
+    };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+
+
+    <style>
+    td {
+        background: #e4e4e4;
+        width: 50px;
+        height: 50px;
+        text-align: center;
+    }
+    </style>
+    <b>Before</b>
+    <table cellpadding="0">
+        <tr>
+            <td>1</td>
+            <td>4</td>
+            <td>5</td>
+            <td>6</td>
+            <td>7</td>
+            <td>8</td>
+            <td>9</td>
+            <td>10</td>
+        </tr>
+    </table>
+    <b>After</b>
+    <table cellpadding="0">
+        <tr>
+            <td>1</td>
+            <td>2</td>
+            <td>3</td>
+            <td>four</td>
+            <td>5</td>
+            <td>6</td>
+            <td>8</td>
+            <td>9</td>
+        </tr>
+    </table>
+    <b>Detail</b>
+    <table cellpadding="0">
+        <tr>
+            <td>1</td>
+            <td style="background: #9cc5b0">2</td>
+            <td style="background: #9cc5b0">3</td>
+            <td style="background: #f5efae">4</td>
+            <td>5</td>
+            <td>6</td>
+            <td style="background: #b34038">7</td>
+            <td>8</td>
+            <td>9</td>
+            <td style="background: #b34038">10</td>
+        </tr>
+    </table>
+
+
+
+
+    <br>
+    <br>
+    <b>children</b>
+    <table cellpadding="0">
+        <tr>
+            <td>1</td>
+            <td>4</td>
+            <td>5</td>
+            <td>6</td>
+            <td>7</td>
+            <td>8</td>
+            <td>9</td>
+            <td>10</td>
+        </tr>
+    </table>
+    <b>childrenChanges</b>
+    <table cellpadding="0">
+        <tr>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+    </table>
+    <b>disposeChildren</b>
+    <div>Empty</div>
+
+
+    <br>
+    <br>
+    <b>children</b>
+    <table cellpadding="0">
+        <tr>
+            <td>1</td>
+            <td style="background: #9cc5b0">-</td>
+            <td style="background: #9cc5b0">-</td>
+            <td>4</td>
+            <td>5</td>
+            <td>6</td>
+            <td>7</td>
+            <td>8</td>
+            <td>9</td>
+            <td>10</td>
+        </tr>
+    </table>
+    <b>childrenChanges</b>
+    <table cellpadding="0">
+        <tr>
+            <td>-</td>
+            <td style="background: #9cc5b0">-</td>
+            <td style="background: #9cc5b0">-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+    </table>
+    <b>disposeChildren</b>
+    <div>Empty</div>
+
+
+    <br>
+    <br>
+    <b>children</b>
+    <table cellpadding="0">
+        <tr>
+            <td>1</td>
+            <td style="background: #9cc5b0">-</td>
+            <td style="background: #9cc5b0">-</td>
+            <td>4</td>
+            <td>5</td>
+            <td>6</td>
+            <td>7</td>
+            <td>8</td>
+            <td>9</td>
+            <td>10</td>
+        </tr>
+    </table>
+    <b>childrenChanges</b>
+    <table cellpadding="0">
+        <tr>
+            <td>-</td>
+            <td style="background: #9cc5b0">-</td>
+            <td style="background: #9cc5b0">-</td>
+            <td style="background: #f5efae">Arr(1)</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+    </table>
+    <b>disposeChildren</b>
+    <div>Empty</div>
+
+    <br>
+    <br>
+    <b>children</b>
+    <table cellpadding="0">
+        <tr>
+            <td>1</td>
+            <td style="background: #9cc5b0">-</td>
+            <td style="background: #9cc5b0">-</td>
+            <td>4</td>
+            <td>5</td>
+            <td>6</td>
+            <td>8</td>
+            <td>9</td>
+        </tr>
+    </table>
+    <b>childrenChanges</b>
+    <table cellpadding="0">
+        <tr>
+            <td>-</td>
+            <td style="background: #9cc5b0">-</td>
+            <td style="background: #9cc5b0">-</td>
+            <td style="background: #f5efae">Arr(1)</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+    </table>
+    <b>disposeChildren</b>
+    <table cellpadding="0">
+        <tr>
+            <td style="background: #b34038">7</td>
+            <td style="background: #b34038">10</td>
+        </tr>
+    </table>
+
+    <br>
+    <br>
+    <b>Old</b>
+    <table cellpadding="0">
+        <tr>
+            <td style="border: 1px solid #aaa;background: #fff; font-size:18px">-&gt;</td>
+            <td>a</td>
+            <td>b</td>
+            <td>c</td>
+            <td>d</td>
+            <td>e</td>
+            <td>f</td>
+            <td>g</td>
+            <td style="border: 1px solid #aaa;background: #fff; font-size:18px">&lt;-</td>
+        </tr>
+    </table>
+    <b>New</b>
+    <table cellpadding="0">
+        <tr>
+            <td style="border: 1px solid #aaa;background: #fff; font-size:18px">-&gt;</td>
+            <td>a</td>
+            <td>b</td>
+            <td>c</td>
+            <td>d</td>
+            <td style="background: #9cc5b0">h</td>
+            <td>e</td>
+            <td>f</td>
+            <td>g</td>
+            <td style="border: 1px solid #aaa;background: #fff; font-size:18px">&lt;-</td>
+        </tr>
+    </table>
+    <b>Diff</b>
+    <table cellpadding="0">
+        <tr>
+            <td style="background: #9cc5b0">h</td>
+        </tr>
+    </table>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+</body>
+</html>
