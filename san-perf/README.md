@@ -844,7 +844,6 @@ myApp.data.set('list[2]', 'two');
 #### trackBy
 
 > 我就是我，是颜色不一样的烟火。
->
 >                 -- 张国荣《我》
 
 ```html
