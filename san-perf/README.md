@@ -212,7 +212,7 @@ aNode.hotspot = {
 };
 ```
 
-上面这个来自 [preheat-a-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js) 的简单代码节选不包含细节，但是可以看出， **预热** 过程生成了一个 `hotspot` 对象，其包含这样的一些属性：
+上面这个来自 [preheat-a-node.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js) 的简单代码节选不包含细节，但是可以看出， **预热** 过程生成了一个 `hotspot` 对象，其包含这样的一些属性：
 
 - data - 节点数据引用的摘要信息
 - dynamicProps - 节点上的动态属性
@@ -222,7 +222,7 @@ aNode.hotspot = {
 
 
 
-**预热** 的主要目的非常简单，就是把在模板信息中就能确定的事情提前，只做一遍，避免在 **渲染/更新** 过程中重复去做，从而节省时间。**预热** 过程更多的细节见 [preheat-a-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js)。在接下来的部分，对 `hotspot` 发挥作用的地方也会进行详细说明。
+**预热** 的主要目的非常简单，就是把在模板信息中就能确定的事情提前，只做一遍，避免在 **渲染/更新** 过程中重复去做，从而节省时间。**预热** 过程更多的细节见 [preheat-a-node.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js)。在接下来的部分，对 `hotspot` 发挥作用的地方也会进行详细说明。
 
 ### 视图创建过程
 
@@ -245,7 +245,7 @@ if (isBrowser && aNode.tagName
 }
 ```
 
-[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 中包含了所有的属性声明，我们知道哪些属性是动态的，哪些属性是静态的。对于静态属性，我们可以在 **预热** 阶段就直接设置好。See [preheat-a-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L117-L137)
+[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 中包含了所有的属性声明，我们知道哪些属性是动态的，哪些属性是静态的。对于静态属性，我们可以在 **预热** 阶段就直接设置好。See [preheat-a-node.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js#L122-L142)
 
 
 ```js
@@ -269,7 +269,7 @@ each(aNode.props, function (prop, index) {
 ```
 
 
-在 **视图创建过程** 中，就可以从 `sourceNode` clone，并且只对动态属性进行设置。See [element-own-create.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-own-create.js#L28-L62)
+在 **视图创建过程** 中，就可以从 `sourceNode` clone，并且只对动态属性进行设置。See [element.js#L115-L150](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/element.js#L115-L150)
 
 
 ```js
@@ -303,13 +303,13 @@ for (var i = 0, l = props.length; i < l; i++) {
 
 #### 属性操作
 
-不同属性对应 DOM 的操作方式是不同的，属性的 **预热** 提前保存了属性操作函数（[preheat-a-node.jsL119](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L119)），属性初始化或更新时就无需每次都重复获取。
+不同属性对应 DOM 的操作方式是不同的，属性的 **预热** 提前保存了属性操作函数（[preheat-a-node.js#L133](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js#L133)），属性初始化或更新时就无需每次都重复获取。
 
 ```js
 prop.handler = getPropHandler(aNode.tagName, prop.name);
 ```
 
-对于 `s-bind`，对应的数据是 **预热** 阶段无法预知的，所以属性操作函数只能在具体操作时决定。See [element-own-create.jsL42](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-own-create.js#L42)
+对于 `s-bind`，对应的数据是 **预热** 阶段无法预知的，所以属性操作函数只能在具体操作时决定。See [element.js#L128-L137](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/element.js#L128-L137)
 
 ```js
 for (var key in this._sbindData) {
@@ -324,7 +324,7 @@ for (var key in this._sbindData) {
 }
 ```
 
-所以，`getPropHandler` 函数的实现也进行了相应的结果缓存。See [get-prop-handler.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/get-prop-handler.js#L247-L258)
+所以，`getPropHandler` 函数的实现也进行了相应的结果缓存。See [get-prop-handler.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/get-prop-handler.js#L247-L258)
 
 ```js
 var tagPropHandlers = elementPropHandlers[tagName];
