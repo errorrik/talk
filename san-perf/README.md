@@ -685,10 +685,10 @@ this.data.set('list[0].name', 'san');
 
 ![List Update](img/list-eg.png)
 
-[San](https://github.com/baidu/san/) 的 [ForNode](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js) 负责列表的渲染和更新。在更新过程里：
+[San](https://github.com/baidu/san/) 的 [ForNode](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js) 负责列表的渲染和更新。在更新过程里：
 
-- [_update](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L242) 方法接收数据变化信息后，根据类型进行分发
-- [_updateArray](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L350) 负责处理数组类型的更新。其遍历数据变化信息，计算得到更新动作，最后执行更新行为。
+- [_update](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L242) 方法接收数据变化信息后，根据类型进行分发
+- [_updateArray](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L350) 负责处理数组类型的更新。其遍历数据变化信息，计算得到更新动作，最后执行更新行为。
 
 假设数据变化信息为：
 
@@ -701,14 +701,14 @@ this.data.set('list[0].name', 'san');
 ]
 ```
 
-在遍历数据变化信息前，我们先初始化一个和当前 children 等长的数组：childrenChanges。其用于存储 children 里每个子节点的数据变化信息。See [for-node.js#L352](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L352)
+在遍历数据变化信息前，我们先初始化一个和当前 children 等长的数组：childrenChanges。其用于存储 children 里每个子节点的数据变化信息。See [for-node.js#L352](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L352)
 
-同时，我们初始化一个 disposeChildren 数组，用于存储需要被删除的节点。See [for-node.js#L362](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L362)
+同时，我们初始化一个 disposeChildren 数组，用于存储需要被删除的节点。See [for-node.js#L362](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L362)
 
 ![childrenChanges](img/children-changes.png)
 
 
-接下来，[_updateArray](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L376) 循环处理数据变化信息。当遇到插入时，同时扩充 children 和 childrenChanges 数组。
+接下来，[_updateArray](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L376) 循环处理数据变化信息。当遇到插入时，同时扩充 children 和 childrenChanges 数组。
 
 ![childrenChanges](img/children-changes-insert.png)
 
@@ -720,7 +720,7 @@ this.data.set('list[0].name', 'san');
 
 ![childrenChanges](img/children-changes-remove.png)
 
-遍历数据变化信息结束后，执行更新行为分成两步：See [for-node.js#L724-L775](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L724-L775)
+遍历数据变化信息结束后，执行更新行为分成两步：See [for-node.js#L772-L823](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L772-L823)
 
 1. 先执行删除 disposeChildren
 2. 遍历 children，对标记全新的子节点执行创建与插入，对存在的节点根据 childrenChanges 相应位置的信息执行更新
@@ -737,7 +737,7 @@ this._disposeChildren(disposeChildren, function () {
 
 #### 添加项
 
-在遍历数据变化信息时，遇到添加项，往 children 和 childrenChanges 中填充的只是 `undefined` 或 `0` 的占位值，不初始化新节点。See [for-node.js#L518-L520](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L518-L520)
+在遍历数据变化信息时，遇到添加项，往 children 和 childrenChanges 中填充的只是 `undefined` 或 `0` 的占位值，不初始化新节点。See [for-node.js#L518-L520](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L518-L520)
 
 ```js
 var spliceArgs = [changeStart + deleteCount, 0].concat(new Array(newCount));
@@ -752,7 +752,7 @@ childrenChanges.splice.apply(childrenChanges, spliceArgs);
 
 前文中提过，视图创建的过程，对于 DOM 的创建是挨个 `createElement` 并 `appendChild` 到 `parentNode` 中的。但是在删除的时候，我们并不需要把整棵子树上的节点都挨个删除，只需要把要删除子树的根元素从 `parentNode` 中 `removeChild`。
 
-所以，对于 Element、TextNode、ForNode、IfNode 等节点的 `dispose` 方法，都包含一个隐藏参数：`noDetach`。当接收到的值为 `true` 时，节点只做必要的清除操作（移除 DOM 上挂载的事件、清理节点树的引用关系），不执行其对应 DOM 元素的删除操作。See [text-node.js#L118](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/text-node.js#L118) [node-own-simple-dispose.js#L22](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/node-own-simple-dispose.js#L22) [element-own-leave.js#L42](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-own-leave.js#L42) etc...
+所以，对于 Element、TextNode、ForNode、IfNode 等节点的 `dispose` 方法，都包含一个隐藏参数：`noDetach`。当接收到的值为 `true` 时，节点只做必要的清除操作（移除 DOM 上挂载的事件、清理节点树的引用关系），不执行其对应 DOM 元素的删除操作。See [text-node.js#L118](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/text-node.js#L118) [node-own-simple-dispose.js#L22](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/node-own-simple-dispose.js#L22) [element.js#L211](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/element.js#L211) etc...
 
 ```js
 if (!noDetach) {
@@ -760,7 +760,7 @@ if (!noDetach) {
 }
 ```
 
-另外，在很多情况下，一次视图更新周期中如果有数组项的删除，是不会有对其他项的更新操作的。所以我们增加了 [isOnlyDispose](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L368) 变量用于记录是否只包含数组项删除操作。在 **执行更新** 阶段，如果该项为 `true`，则完成删除动作后不再遍历 `children` 进行子项更新。See [for-node.js#L739](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L739)
+另外，在很多情况下，一次视图更新周期中如果有数组项的删除，是不会有对其他项的更新操作的。所以我们增加了 [isOnlyDispose](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L368) 变量用于记录是否只包含数组项删除操作。在 **执行更新** 阶段，如果该项为 `true`，则完成删除动作后不再遍历 `children` 进行子项更新。See [for-node.js#L787](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L787)
 
 ```js
 if (isOnlyDispose) {
@@ -836,7 +836,7 @@ myApp.data.set('list[2]', 'two');
 我们采用了如下的处理过程，保证原列表与新列表重叠部分节点执行更新操作，无需删除再创建：
 
 1. 如果原列表项更多，从尾部开始把多余的部分标记清除。See [for-node.js#L717-L721](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L717-L721)
-2. 从起始遍历新列表。如果在旧列表长度范围内，标记更新(See [for-node.js#L730-L740](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L730-L740))；如果是新列表多出的部分，标记新建(See [for-node.js#L742](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L742))。
+2. 从起始遍历新列表。如果在旧列表长度范围内，标记更新(See [for-node.js#L730-L740](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L730-L740))；如果是新列表多出的部分，标记新建(See [for-node.js#L742](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L742))。
 
 [San](https://github.com/baidu/san/) 鼓励开发者细粒度的使用[数据操作方法](https://baidu.github.io/san/tutorial/data-method/)，但总有无法精准进行数据操作，只能直接 [set](https://baidu.github.io/san/tutorial/data-method/#set) 整个数组。举一个最常见的例子：数据是从服务端返回的 JSON。在这种场景下，就是 [trackBy](https://baidu.github.io/san/tutorial/for/#trackBy) 发挥作用的时候了。
 
