@@ -788,9 +788,9 @@ for (var i = 0; i < newLen; i++) {
 
 #### 清空
 
-首先，当数组长度为 0 时，显然整个列表项直接清空就行了，数据变化信息可以完全忽略，不需要进行多余的遍历。See [for-node.js#L248-L252](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L248-L252)
+首先，当数组长度为 0 时，显然整个列表项直接清空就行了，数据变化信息可以完全忽略，不需要进行多余的遍历。See [for-node.js#L248-L251](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L248-L251)
 
-其次，如果一个元素里的所有元素都是由列表项组成的，那么元素的删除可以**暴力清除**：通过一次 `parentNode.textContent = ''` 完成，无需逐项从父元素中移除。See [for-node.js#L318-L335](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L318-L335)
+其次，如果一个元素里的所有元素都是由列表项组成的，那么元素的删除可以**暴力清除**：通过一次 `parentNode.textContent = ''` 完成，无需逐项从父元素中移除。See [for-node.js#L316-L332](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L316-L332)
 
 ```js
 // 代码节选
@@ -817,8 +817,8 @@ myApp.data.set('list[2]', 'two');
 
 对于 ForNode 的更新：
 
-- 首先使用 [changeExprCompare](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L378) 方法判断数据变化对象与列表引用数据声明之间的关系。See [change-expr-compare.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/change-expr-compare.js)
-- 如果属于子项更新，则转换成对应子项的数据变更信息，其他子项对该信息无感知。See [for-node.js#L426](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L426)
+- 首先使用 [changeExprCompare](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L378) 方法判断数据变化对象与列表引用数据声明之间的关系。See [change-expr-compare.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/change-expr-compare.js)
+- 如果属于子项更新，则转换成对应子项的数据变更信息，其他子项对该信息无感知。See [for-node.js#L426](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L426)
 
 ![Update For Item](img/update-for-item.png)
 
