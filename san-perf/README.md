@@ -599,9 +599,9 @@ obj.b.b1 = 5;
 obj = Object.assign({}, obj, {b: Object.assign({}, obj.b, {b1: 5})});
 ```
 
-[San](https://github.com/baidu/san/) 的[数据操作](https://baidu.github.io/san/tutorial/data-method/)是通过 data 上的方法提供的，所以内部实现可以天然 immutable，这利于视图更新操作中的一些判断。See [data.js#L207](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L207)
+[San](https://github.com/baidu/san/) 的[数据操作](https://baidu.github.io/san/tutorial/data-method/)是通过 data 上的方法提供的，所以内部实现可以天然 immutable，这利于视图更新操作中的一些判断。See [data.js#L209](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/data.js#L209)
 
-由于视图刷新是根据数据变化信息进行的，所以判断当数据没有变化时，不产生数据变化信息就行了。See [data.js#L202](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L202) [for-node.jsL555](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L555) [L580](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L580) [L629](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L629) [L683](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L683)
+由于视图刷新是根据数据变化信息进行的，所以判断当数据没有变化时，不产生数据变化信息就行了。See [data.js#L204](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/data.js#L204) [for-node.jsL570](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L570) [L595](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L595) [L679](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L679) [L731](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L731)
 
 [San](https://github.com/baidu/san/) 期望开发者对数据操作细粒度的使用[数据操作方法](https://baidu.github.io/san/tutorial/data-method/)。否则，不熟悉 immutable 的开发者可能会碰到如下情况。
 
@@ -632,7 +632,7 @@ this.data.set('b.b1', 5);
 
 #### 列表数据操作方法
 
-上文中我们提到，[San](https://github.com/baidu/san/) 的视图更新机制是基于数据变化信息的。[数据操作方法](https://baidu.github.io/san/tutorial/data-method/) 提供了一系列方法，会 fire changeObj。changeObj 只有两种类型： **SET** 和 **SPLICE**。See [data-change-type.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data-change-type.js) [data.js#L209-L213](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L209-L213) [data.js#L350-L358](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L350-L358)
+上文中我们提到，[San](https://github.com/baidu/san/) 的视图更新机制是基于数据变化信息的。[数据操作方法](https://baidu.github.io/san/tutorial/data-method/) 提供了一系列方法，会 fire changeObj。changeObj 只有两种类型： **SET** 和 **SPLICE**。See [data-change-type.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/data-change-type.js) [data.js#L211](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/data.js#L211) [data.js#L352](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/data.js#L352)
 
 ```js
 // SET
@@ -781,7 +781,7 @@ for (var i = 0; i < newLen; i++) {
 <li s-for="item, index in list">{{index + 1}}/{{list.length}} item</li>
 ```
 
-在这种场景下，即使只添加或删除一项，整个列表视图都需要被刷新。由于子节点的更新是在 **执行更新** 阶段通过 _update 方法传递数据变化信息的，所以在 **执行更新** 前，我们根据以下两个条件，判断是否需要为子节点增加 length 变更信息。See [for-node.js#L704-L719](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L704-L719)
+在这种场景下，即使只添加或删除一项，整个列表视图都需要被刷新。由于子节点的更新是在 **执行更新** 阶段通过 _update 方法传递数据变化信息的，所以在 **执行更新** 前，我们根据以下两个条件，判断是否需要为子节点增加 length 变更信息。See [for-node.js#L752-L767](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L752-L767)
 
 - 数组长度是否发生变化
 - 通过数据摘要判断子项视图是否依赖 length 数据。这个判断逻辑上是多余的，但是可以减少子项更新的成本
