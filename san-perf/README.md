@@ -835,8 +835,8 @@ myApp.data.set('list[2]', 'two');
 
 我们采用了如下的处理过程，保证原列表与新列表重叠部分节点执行更新操作，无需删除再创建：
 
-1. 如果原列表项更多，从尾部开始把多余的部分标记清除。See [for-node.js#L669-L673](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L669-L673)
-2. 从起始遍历新列表。如果在旧列表长度范围内，标记更新(See [for-node.js#L682-L692](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L682-L692))；如果是新列表多出的部分，标记新建(See [for-node.js#L694](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L694))。
+1. 如果原列表项更多，从尾部开始把多余的部分标记清除。See [for-node.js#L717-L721](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L717-L721)
+2. 从起始遍历新列表。如果在旧列表长度范围内，标记更新(See [for-node.js#L730-L740](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L730-L740))；如果是新列表多出的部分，标记新建(See [for-node.js#L742](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L742))。
 
 [San](https://github.com/baidu/san/) 鼓励开发者细粒度的使用[数据操作方法](https://baidu.github.io/san/tutorial/data-method/)，但总有无法精准进行数据操作，只能直接 [set](https://baidu.github.io/san/tutorial/data-method/#set) 整个数组。举一个最常见的例子：数据是从服务端返回的 JSON。在这种场景下，就是 [trackBy](https://baidu.github.io/san/tutorial/for/#trackBy) 发挥作用的时候了。
 
