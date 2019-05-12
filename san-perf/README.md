@@ -364,9 +364,9 @@ return propHandler;
 
 因为每个节点都通过 `createNode` 方法创建，所以它的性能是极其重要的。那这个过程的实现，有哪些性能相关的考虑呢？
 
-首先，**预热** 过程提前选择好 [ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 节点对应的实际类型。See [preheat-a-node.jsL52](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L152) [preheat-a-node.jsL165](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L165) [preheat-a-node.jsL180](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L180) [preheat-a-node.jsL185](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L185-L192)
+首先，**预热** 过程提前选择好 [ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 节点对应的实际类型。See [preheat-a-node.js#L58](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js#L58) [preheat-a-node.js#L170](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js#L170) [preheat-a-node.jsL185](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js#L185) [preheat-a-node.jsL190](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js#L190-L197)
 
-在 `createNode` 一开始就可以直接知道对应的节点类型。See [create-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/create-node.js#L24-L26)
+在 `createNode` 一开始就可以直接知道对应的节点类型。See [create-node.js#L24-L26](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/create-node.js#L24-L26)
 
 ```js
 if (aNode.Clazz) {
@@ -453,7 +453,7 @@ myApp.data.set('title', 'SampleList');
 
 - 组件上的一个属性，组件的数据状态容器
 - 一个对象，提供了数据读取和操作的方法。See [数据操作文档](https://baidu.github.io/san/tutorial/data-method/)
-- Observable。每次数据的变更都会 `fire`，可以通过 `listen` 方法监听数据变更。See [data.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js)
+- Observable。每次数据的变更都会 `fire`，可以通过 `listen` 方法监听数据变更。See [data.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/data.js)
 
 `data` 是变化可监听的，所以组件的视图变更就有了基础出发点。
 
@@ -461,11 +461,11 @@ myApp.data.set('title', 'SampleList');
 
 [San](https://github.com/baidu/san/) 最初设计的时候想法很简单：模板声明包含了对数据的引用，当数据变更时可以精准地只更新需要更新的节点，性能应该是很高的。从上面组件例子的模板中，一眼就能看出，title 数据的修改，只需要更新一个节点。但是，我们如何去找到它并执行视图更新动作呢？这就是组件的视图更新机制了。其中，有几个关键的要素：
 
-- 组件在初始化的过程中，创建了 `data` 实例并监听其数据变化。See [component.js#L256](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L256)
-- 视图更新是异步的。数据变化会被保存在一个数组里，在 `nextTick` 时批量更新。See [component.js#L779](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L779-L784)
+- 组件在初始化的过程中，创建了 `data` 实例并监听其数据变化。See [component.js#L255](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/component.js#L255)
+- 视图更新是异步的。数据变化会被保存在一个数组里，在 `nextTick` 时批量更新。See [component.js#L782](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/component.js#L782-L787)
 - 组件是个 `children` 属性串联的节点树，视图更新是个自上而下遍历的过程。
 
-在节点树更新的遍历过程中，每个节点通过 `_update({Array}changes)` 方法接收数据变化信息，更新自身的视图，并向子节点传递数据变化信息。[component.js#L685](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L685-L687) 是组件向下遍历的起始，但从最典型的 [Element的_update方法](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element.js#L197-L258) 可以看得更清晰些：
+在节点树更新的遍历过程中，每个节点通过 `_update({Array}changes)` 方法接收数据变化信息，更新自身的视图，并向子节点传递数据变化信息。[component.js#L688](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/component.js#L688-L690) 是组件向下遍历的起始，但从最典型的 [Element的_update方法](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/element.js#L240-L299) 可以看得更清晰些：
 
 1. 先看自身的属性有没有需要更新的
 2. 然后把数据变化信息通过 `children` 往下传递。
@@ -511,17 +511,16 @@ Element.prototype._update = function (changes) {
 
 从上图中不难发现，与实际的更新行为相比，遍历确定更新节点的消耗要大得多。所以为遍历过程减负，是一个必要的事情。[San](https://github.com/baidu/san/) 在这方面是怎么做的呢？
 
-首先，**预热** 过程生成的 `hotspot` 对象中，有一项 `data`，包含了节点及其子节点对数据引用的摘要信息。See [preheat-a-node.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js)
+首先，**预热** 过程生成的 `hotspot` 对象中，有一项 `data`，包含了节点及其子节点对数据引用的摘要信息。See [preheat-a-node.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js)
 
-然后，在视图更新的节点树遍历过程中，使用 `hotspot.data` 与数据变化信息进行比对。结果为 false 时意味着数据的变化不会影响当前节点及其子节点的视图，就不会执行自身属性的更新，也不会继续向下遍历。遍历过程在更高层的节点被中断，节省了下层子树的遍历开销。See [element.js#198](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element.js#L198-L200) [changes-is-in-data-ref.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/changes-is-in-data-ref.js)
+然后，在视图更新的节点树遍历过程中，使用 `hotspot.data` 与数据变化信息进行比对。结果为 false 时意味着数据的变化不会影响当前节点及其子节点的视图，就不会执行自身属性的更新，也不会继续向下遍历。遍历过程在更高层的节点被中断，节省了下层子树的遍历开销。See [element.js#241](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/element.js#L240-L241) [changes-is-in-data-ref.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/changes-is-in-data-ref.js)
 
 ```js
 Element.prototype._update = function (changes) {
-    if (!changesIsInDataRef(changes, this.aNode.hotspot.data)) {
-        return;
+    var dataHotspot = this.aNode.hotspot.data;
+    if (dataHotspot && changesIsInDataRef(changes, dataHotspot)) {
+        // ...
     }
-
-    // ...
 };
 ```
 
@@ -536,8 +535,8 @@ Element.prototype._update = function (changes) {
 
 在视图创建过程的章节中，提到过在 **预热** 过程中，我们得到了：
 
-- dynamicProps：哪些属性是动态的。See [preheat-a-node.js#L117](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L117-L137)
-- prop.handler：属性的设置操作函数。See [preheat-a-node.jsL119](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/preheat-a-node.js#L119)
+- dynamicProps：哪些属性是动态的。See [preheat-a-node.js#L117](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js#L122-L142)
+- prop.handler：属性的设置操作函数。See [preheat-a-node.jsL119](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/preheat-a-node.js#L124)
 
 
 ```html
@@ -547,7 +546,7 @@ Element.prototype._update = function (changes) {
 在上面这个例子中，`dynamicProps` 只包含 `value`，不包含 `type`。
 
 
-所以在节点的属性更新时，我们只需要遍历 `hotspot.dynamicProps`，并且直接使用 `prop.handler` 来执行属性更新。See [element.js#L197-L258](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element.js#L197-L258)
+所以在节点的属性更新时，我们只需要遍历 `hotspot.dynamicProps`，并且直接使用 `prop.handler` 来执行属性更新。See [element.js#L259-L277](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/element.js#L259-L277)
 
 ```js
 Element.prototype._update = function (changes) {
@@ -876,7 +875,7 @@ myApp.data.set('list[2]', 'two');
 call 和 apply 是 JavaScript 中的魔法，也是性能的大包袱。在 [San](https://github.com/baidu/san/) 中，我们尽可能减少 call 和 apply 的使用。下面列两个点：
 
 
-比如，对 filter 的处理中，内置的 filter 由于都是 pure function，我们明确知道运行结果不依赖 this，并且参数个数都是确定的，所以无需使用 call。See [eval-expr#L164-L72](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/eval-expr#L164-L72)
+比如，对 filter 的处理中，内置的 filter 由于都是 pure function，我们明确知道运行结果不依赖 this，并且参数个数都是确定的，所以无需使用 call。See [eval-expr.js#L164-L172](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/eval-expr.js#L164-L172)
 
 ```js
 if (owner.filters[filterName]) {
@@ -892,8 +891,8 @@ else if (DEFAULT_FILTERS[filterName]) {
 
 再比如，Component 和 Element 之间应该是继承关系，create、attach、dispose、toPhase 等方法有很多可以复用的逻辑。基于性能的考虑，实现中并没有让 Component 和 Element 发生关系。对于复用的部分：
 
-- 复用逻辑较少的直接再写一遍（See [component.js#L352](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L352)）
-- 复用逻辑多的，部分通过函数直接调用的形式复用（See [element-dispose-children.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-dispose-children.js)），部分通过函数挂载到 prototype 成为实例方法的形式复用（See [element-own-create.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element-own-create.js)）。场景和例子比较多，就不一一列举了。
+- 复用逻辑较少的直接再写一遍（See [component.js#L355](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/component.js#L355)）
+- 复用逻辑多的，部分通过函数直接调用的形式复用（See [element-get-transition.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/element-get-transition.js) etc...），部分通过函数挂载到 prototype 成为实例方法的形式复用（See [element-own-dispose.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/element-own-dispose.js) etc...）。场景和例子比较多，就不一一列举了。
 
 
 
@@ -901,7 +900,7 @@ else if (DEFAULT_FILTERS[filterName]) {
 
 看到这里的你不知是否记得，在 **创建节点** 章节中，提到节点的函数签名不合并成一个数组，就是为了防止中间对象的创建。中间对象不止是创建时有开销，触发 GC 回收内存也是有开销的。在 [San](https://github.com/baidu/san/) 的实现中，我们尽可能避免中间对象的创建。下面列两个点：
 
-数据操作的过程，直接传递表达式层级数组，以及当前指针位置。不使用 slice 创建表达式子层级数组。See [data.js#L136](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L136)
+数据操作的过程，直接传递表达式层级数组，以及当前指针位置。不使用 slice 创建表达式子层级数组。See [data.js#L138](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/data.js#L138)
 
 ```js
 
@@ -914,7 +913,7 @@ function immutableSet(source, exprPaths, pathsStart, pathsLen, value, data) {
 }
 ```
 
-data 创建时如果传入初始数据对象，以此为准，避免 extend 使初始数据对象变成中间对象。See [data.js#L23](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/data.js#L23)
+data 创建时如果传入初始数据对象，以此为准，避免 extend 使初始数据对象变成中间对象。See [data.js#L23](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/data.js#L23)
 
 ```js
 function Data(data, parent) {
@@ -929,7 +928,7 @@ function Data(data, parent) {
 
 函数调用本身的开销是很小的，但是调用本身也会初始化环境对象，调用结束后环境对象也需要被回收。[San](https://github.com/baidu/san/) 对函数调用较为频繁的地方，做了避免调用的条件判断。下面列两个点：
 
-element 在创建子元素时，判断子元素构造器是否存在，如果存在则无需调用 createNode 函数。See [element.js#L167-L169](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/element.js#L167-L169)
+element 在创建子元素时，判断子元素构造器是否存在，如果存在则无需调用 createNode 函数。See [element.js#L167-L169](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/element.js#L167-L169)
 
 ```js
 var child = childANode.Clazz
@@ -937,13 +936,13 @@ var child = childANode.Clazz
     : createNode(childANode, this, this.scope, this.owner);
 ```
 
-[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 中对定值表达式（数字、bool、字符串字面量）的值保存在对象的 value 属性中。`evalExpr` 方法开始时根据 `expr.value != null` 返回。不过在调用频繁的场景（比如文本的拼接、表达式变化比对、等等），会提前进行一次判断，减少 `evalExpr` 的调用。See [eval-expr.js#L203](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/eval-expr.js#L203) [change-expr-compare.js#L77](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/change-expr-compare.js#L77)
+[ANode](https://github.com/baidu/san/blob/master/doc/anode.md) 中对定值表达式（数字、bool、字符串字面量）的值保存在对象的 value 属性中。`evalExpr` 方法开始时根据 `expr.value != null` 返回。不过在调用频繁的场景（比如文本的拼接、表达式变化比对、等等），会提前进行一次判断，减少 `evalExpr` 的调用。See [eval-expr.js#L203](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/eval-expr.js#L203) [change-expr-compare.js#L77](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/change-expr-compare.js#L77)
 
 ```js
 buf += seg.value || evalExpr(seg, data, owner);
 ```
 
-另外，还有很重要的一点：[San](https://github.com/baidu/san/) 里虽然实现了 `each` 方法，但是在视图创建、视图更新、变更判断、表达式取值等关键性的过程中，还是直接使用 for 进行遍历，就是为了减少不必要的函数调用开销。See [each.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/util/each.js) [eval-expr.js](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/runtime/eval-expr.js) etc...
+另外，还有很重要的一点：[San](https://github.com/baidu/san/) 里虽然实现了 `each` 方法，但是在视图创建、视图更新、变更判断、表达式取值等关键性的过程中，还是直接使用 for 进行遍历，就是为了减少不必要的函数调用开销。See [each.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/util/each.js) [eval-expr.js](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/runtime/eval-expr.js) etc...
 
 ```js
 // bad performance
@@ -978,7 +977,7 @@ function extend(target, source) {
 }
 ```
 
-从一个对象创建一个大部分成员都一样的新对象时，避免使用 `extend`。See [for-node.jsL404](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/for-node.js#L404)
+从一个对象创建一个大部分成员都一样的新对象时，避免使用 `extend`。See [for-node.jsL404](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/for-node.js#L404)
 
 ```js
 // bad performance
@@ -1012,7 +1011,7 @@ change = change.type === DataChangeType.SET
     };
 ```
 
-将一个对象的成员赋予另一个对象时，避免使用 `extend`。See [component.jsL114](https://github.com/baidu/san/blob/f0f3444f42ebb89807f03d040c001d282b4e9a48/src/view/component.js#L114)
+将一个对象的成员赋予另一个对象时，避免使用 `extend`。See [component.jsL113](https://github.com/baidu/san/blob/15935bdaad42246742e16759f789af536592c3b7/src/view/component.js#L113)
 
 ```js
 // bad performance
