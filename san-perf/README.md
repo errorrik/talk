@@ -865,6 +865,10 @@ myApp.data.set('list[2]', 'two');
 - 更新全部项：trackBy 过程在该场景下，性能消耗很低
 - 交换：相邻元素的交换，该优化都能发挥较大作用。交换的元素间隔越小，该优化发挥作用越大
 
+从 [benchmark](https://krausest.github.io/js-framework-benchmark/current.html) 的结果能看出来，[San](https://github.com/baidu/san/) 在 [trackBy](https://baidu.github.io/san/tutorial/for/#trackBy) 下也有较好的性能。
+
+![San keyed performance](img/san-perf-keyed.png)
+
 
 ## 吹毛求疵
 
